@@ -79,7 +79,7 @@ http://nagios-server-address/adagios
 # NRDP
 http://nagios-server-address/nrdp
 
-# NCPA
+# NCPA (Client Side)
 https://ncpa-agent-address:5693/
 ```
 
