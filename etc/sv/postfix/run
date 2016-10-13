@@ -1,0 +1,12 @@
+#!/bin/bash
+
+: ${MAIL_SERVER=$MAIL_PORT_25_TCP_ADDR}
+
+
+sed -i "s/relayhost =.*/relayhost = ${MAIL_SERVER}/" /etc/postfix/main.cf
+sed -i "s/myhostname =.*/myhostname = `hostname`/" /etc/postfix/main.cf
+
+#postfix runs in a chroot and needs resolv.conf to resolve hostnames
+cp /etc/resolv.conf /var/spool/postfix/etc/resolv.conf
+
+exec /usr/lib/postfix/sbin/master -d -c /etc/postfix

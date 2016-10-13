@@ -1,0 +1,48 @@
+version: '2'
+services:
+  nagios:
+    image: nagios
+    ports:
+      - 80:80
+    restart: always
+    networks:
+      - nagios-network
+    depends_on:
+      - mysql
+    environment:
+      - MYSQL_USER=nagios
+      - MYSQL_PASSWORD=nagios
+      - MYSQL_ADDRESS=mysql
+      - MYSQL_DATABASE=nagios
+    volumes:
+      - ./opt/nagios/libexec/plugin.d:/opt/nagios/libexec/plugin.d
+      - ./etc/nagios/conf.d:/etc/nagios/conf.d
+      - ./etc/init.d/nagios:/etc/init.d/nagios
+      - ./etc/nagios/nagios.cfg:/etc/nagios/nagios.cfg
+      - ./etc/nagios/cgi.cfg:/etc/nagios/cgi.cfg
+      - ./etc/nagios/objects/commands.cfg:/etc/nagios/objects/commands.cfg
+      - ./etc/nagios/objects/localhost.cfg:/etc/nagios/objects/localhost.cfg
+      - ./etc/nagios/objects/templates.cfg:/etc/nagios/objects/templates.cfg
+      - ./usr/share/okconfig/client/linux/install_okagent.sh:/usr/share/okconfig/client/linux/install_okagent.sh
+      - ./usr/share/okconfig/client/windows/install_nsclient.sh:/usr/share/okconfig/client/windows/install_nsclient.sh
+      - ./usr/share/okconfig/client/windows/ncpa/install.bat:/usr/share/okconfig/client/windows/ncpa/install.bat
+      - ./usr/share/okconfig/examples/passive.cfg-example:/usr/share/okconfig/examples/passive.cfg-example
+      - ./usr/share/okconfig/examples/passivewindows.cfg-example:/usr/share/okconfig/examples/passivewindows.cfg-example
+
+  mysql:
+    image: mysql:5.6
+    ports:
+      - 3306:3306
+    restart: always
+    networks:
+      - nagios-network
+    environment:
+      - MYSQL_USER=nagios
+      - MYSQL_PASSWORD=nagios
+      - MYSQL_ADDRESS=mysql
+      - MYSQL_DATABASE=nagios
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+
+networks:
+  nagios-network:
+    driver: bridge

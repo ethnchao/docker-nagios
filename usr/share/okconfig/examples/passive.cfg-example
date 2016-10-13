@@ -1,0 +1,68 @@
+define service {
+    use                             generic-service,graphed-service
+    name                            passive-service-HOSTNAME
+    register                        0
+    active_checks_enabled           0
+    passive_checks_enabled          1
+    check_freshness                 1
+    freshness_threshold             600
+    register                        0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Partition-Usage
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Users
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Processes
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Load-Average
+    check_command           check_dummy!0
+}
+
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Swap-Usage
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Memory-Usage
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     CPU-Usage
+    check_command           check_dummy!0
+}
+
+define service{
+    use                     passive-service-HOSTNAME
+    host_name               HOSTNAME
+    service_description     Zombie-Process
+    check_command           check_dummy!0
+}
+
