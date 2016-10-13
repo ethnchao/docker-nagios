@@ -1,0 +1,13 @@
+sudo:
+  - required
+language:
+  - bash
+services:
+  - docker
+
+install:
+  - git clone https://github.com/ethnchao/docker-nagios.git ~/docker-nagios
+
+script:
+  - cd ~/docker-nagios && docker build -t nagios .
+
