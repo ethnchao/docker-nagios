@@ -91,7 +91,7 @@ RUN	cd /tmp \
 RUN	cd /tmp \
 	&& git clone https://github.com/NagiosEnterprises/nagioscore.git \
 	&& cd nagioscore \
-	&& git checkout tags/4.2.1 \
+	&& git checkout tags/4.3.1 \
 	&& ./configure \
 		--prefix=${NAGIOS_HOME} \
 		--exec-prefix=${NAGIOS_HOME} \
@@ -116,7 +116,7 @@ RUN	cd /tmp \
 RUN	cd /tmp \
 	&& git clone https://github.com/nagios-plugins/nagios-plugins.git \
 	&& cd nagios-plugins \
-	&& git checkout tags/release-2.1.3 \
+	&& git checkout tags/release-2.2.0 \
 	&& ./tools/setup \
 	&& ./configure \
 		--prefix=${NAGIOS_HOME} \
@@ -167,7 +167,7 @@ ADD files/ndoutils_mysql.patch /tmp/ndoutils_mysql.patch
 RUN cd /tmp \
 	&& git clone https://github.com/NagiosEnterprises/ndoutils.git \
 	&& cd ndoutils \
-	&& git checkout tags/2.1.1 \
+	&& git checkout tags/2.1.2 \
 	&& ./configure \
 		--prefix="${NAGIOS_HOME}" \
 		--enable-mysql \
@@ -227,7 +227,7 @@ RUN cd /tmp \
     && okconfig verify \
     && mkdir /usr/share/okconfig/client/windows/ncpa \
     && cd /usr/share/okconfig/client/windows/ncpa \
-    && curl -LSfO https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1.exe \
+    && curl -LSfO https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.exe \
     && cd /tmp \
     && curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb -o winexe.deb \
     && dpkg -i winexe.deb \
@@ -278,7 +278,7 @@ nagios ALL = (root) NOPASSWD: ${NAGIOS_HOME}/bin/nagios -v *\n" > /etc/sudoers.d
     && rm -rf /tmp/adagios
 
 RUN cd /tmp \
-    && curl http://mathias-kettner.com/download/mk-livestatus-1.2.8p12.tar.gz -o mk-livestatus.tar.gz \
+    && curl http://mathias-kettner.com/download/mk-livestatus-1.2.8p20.tar.gz -o mk-livestatus.tar.gz \
     && tar zxf mk-livestatus.tar.gz \
     && rm -f mk-livestatus.tar.gz \
     && mv mk-livestatus* mk-livestatus \
