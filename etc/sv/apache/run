@@ -1,4 +1,5 @@
 #!/bin/bash
+
 . /etc/apache2/envvars
 
 . /etc/default/apache-htcacheclean

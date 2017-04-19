@@ -2,9 +2,8 @@ cd /d %~dp0
 @echo off
 cls
 set "basedir=%cd%"
-set "VERSION=2.0.3"
-echo "Installing ncpa %VERSION%"
-"ncpa-%VERSION%.exe" /S /TOKEN='yourn-ncpa-token' /NRDPURL='http://nagios-server-address/nrdp/' /NRDPTOKEN='your-nrdp-token' /HOST='your-host-name'
+echo "Installing ncpa"
+"ncpa.exe" /S /TOKEN='yourn-ncpa-token' /NRDPURL='http://nagios-server-address/nrdp/' /NRDPTOKEN='your-nrdp-token' /HOST='your-host-name'
 move "%programfiles(x86)%\Nagios\NCPA\etc\ncpa.cfg" "%programfiles(x86)%\Nagios\NCPA\etc\ncpacfg.bak"
 net stop ncpapassive
 (

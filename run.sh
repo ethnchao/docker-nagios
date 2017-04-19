@@ -34,6 +34,10 @@ shutdown() {
 }
 
 chmod 755 -R "${NAGIOS_HOME}/libexec/"
+/opt/graphite/bin/carbon-cache.py start
+/etc/init.d/graphios start
+/etc/init.d/grafana-server start
+/etc/init.d/nagios start
 
 exec runsvdir -P /etc/service &
 RUNSVDIR=$!

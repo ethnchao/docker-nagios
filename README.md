@@ -48,6 +48,12 @@ Adagios configuration lives in /etc/adagios
 Okconfig configuration lives in /etc/okconfig.conf
 NRDP configuration lives in /opt/nrdp
 
+### Plugin
+
+Nagios plugin lives in /usr/local/nagios/libexec.
+
+Mount your own plugin at /data/plugin
+
 ### Docker Compose
 
 Use `docker-compose up` to up containers, at the very first time start, will write database table structure to MySQL.
@@ -101,3 +107,91 @@ services:
       - NAGIOSADMIN_USER=your_login_user
       - NAGIOSADMIN_PASS=your_login_pass
 ````
+
+## Packages Dependency
+
+Dockerfile中为了缩小镜像大小，在同一个`RUN`命令中使用apt和pip安装了很多依赖包，每个软件只依赖其中的部分包，这里说明下依赖包的对应关系，对应关系的来源多数是软件的官方文档，部分为了解决一些问题而补充的包。
+
+Nagioscore 需要以下依赖：
+(这里的软件名称较官方文档要少些，因为部分软件有依赖关系，无需写出)
+
+~~~~
+apache2 \
+apache2-utils \
+autoconf \
+bc \
+build-essential \
+dc \
+gawk \
+gettext \
+gperf \
+libapache2-mod-php \
+libgd2-xpm-dev \
+libmcrypt-dev \
+libssl-dev \
+unzip
+~~~~
+
+Nagios 其他功能：
+
+~~~~
+bsd-mailx
+~~~~
+
+Nagios-Plugin编译安装时需要以下依赖：
+
+~~~~
+m4 \
+gettext \
+automake \
+autoconf
+~~~~
+
+Nagios-Plugins各插件运行时可能会使用的依赖，非必须：
+
+~~~~
+iputils-ping \
+fping \
+postfix \
+libnet-snmp-perl \
+smbclient \
+snmp \
+snmpd \
+snmp-mibs-downloader \
+netcat
+~~~~
+
+软件安装相关：`python-pip`、 `git`、 `python-dev`
+
+系统服务：`runit`、 `sudo`
+
+graphite
+
+~~~~
+apache2 \
+apache2-utils \
+build-essential \
+libcairo2-dev \
+libffi-dev \
+libapache2-mod-wsgi
+~~~~
+
+graphios
+
+~~~~
+sudo
+~~~~
+
+ndoutils
+
+~~~~
+mysql-client \
+libmysql++-dev \
+libmysqlclient-dev
+~~~~
+
+Nrpe
+
+~~~~
+build-essential
+~~~~

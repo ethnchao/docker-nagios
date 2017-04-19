@@ -1,5 +1,5 @@
 define service {
-    use                             generic-service,graphed-service
+    use                             generic-service
     name                            passive-service-HOSTNAME
     register                        0
     active_checks_enabled           0
@@ -28,6 +28,7 @@ define service{
     host_name               HOSTNAME
     service_description     Swap-Usage
     check_command           check_dummy!0
+    _graphitepostfix        swapusage
 }
 
 define service{
@@ -35,6 +36,7 @@ define service{
     host_name               HOSTNAME
     service_description     Memory-Usage
     check_command           check_dummy!0
+    _graphitepostfix        memoryusage
 }
 
 define service{
@@ -42,6 +44,7 @@ define service{
     host_name               HOSTNAME
     service_description     CPU-Usage
     check_command           check_dummy!0
+    _graphitepostfix        cpuusage
 }
 
 define service{
@@ -49,4 +52,5 @@ define service{
     host_name               HOSTNAME
     service_description     Partition-C-Usage
     check_command           check_dummy!0
+    _graphitepostfix        win-disk-c-usage
 }

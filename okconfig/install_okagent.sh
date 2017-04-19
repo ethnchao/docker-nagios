@@ -110,7 +110,7 @@ EOF
 }
 
 install_debian() {
-    DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.amd64.deb"
+    DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.amd64.deb"
     if [[ $HOSTTYPE == "i686" ]]; then
         DISTRO_PACKAGE=$(echo $DISTRO_PACKAGE | sed 's/amd64/i386/')
     fi
@@ -129,7 +129,7 @@ install_debian() {
 }
 
 install_opensuse() {
-    DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.os13.x86_64.rpm"
+    DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.os.x86_64.rpm"
     for version in '11' '12' '13'
     do
         echo "$DISTRO" | grep -q "$version" 2>/dev/null && DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.os${version}.x86_64.rpm"
@@ -157,15 +157,17 @@ install_epel() {
 
 install_rhel() {
     if [[ $DISTRO == rhel5 || $DISTRO == centos5 ]] ; then
-        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.el5.x86_64.rpm"
+        rpm -Uvh http://repo.nagios.com/nagios/5/nagios-repo-5-2.el5.noarch.rpm
+        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.el5.x86_64.rpm"
     elif [[ $DISTRO == rhel6 || $DISTRO == centos6 ]]; then
-        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.el6.x86_64.rpm"
+        rpm -Uvh http://repo.nagios.com/nagios/6/nagios-repo-6-2.el6.noarch.rpm
+        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.el6.x86_64.rpm"
     elif [[ $DISTRO == rhel7 || $DISTRO == centos7 ]]; then
-        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.el7.centos.x86_64.rpm"
-    elif [[ "$DISTRO" =~ fedora ]]; then
-        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.fc21.x86_64.rpm"
+        rpm -Uvh http://repo.nagios.com/nagios/7/nagios-repo-7-2.el7.noarch.rpm
+        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.el7.x86_64.rpm"
     else
-        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-1.8.1-1.el6.x86_64.rpm"
+        rpm -Uvh http://repo.nagios.com/nagios/6/nagios-repo-6-2.el6.noarch.rpm
+        DISTRO_PACKAGE="https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.el6.x86_64.rpm"
     fi
     if [[ $HOSTTYPE == "i686" ]]; then
         if [[ "$DISTRO" =~ fedora ]]; then
@@ -180,7 +182,7 @@ install_rhel() {
     && rpm -q nagios-plugins-disk || yum install -y nagios-plugins-disk || fatal_error "Failed to yum install nagios-plugins-disk package" \
     && rpm -q nagios-plugins-procs || yum install -y nagios-plugins-procs || fatal_error "Failed to yum install nagios-plugins-procs package" \
     && echo "Installing ncpa" \
-    && rpm -q ncpa || rpm -Uvh "$DISTRO_PACKAGE" \
+    && yum install ncpa -y \
     && link_plugins \
     && config_ncpa \
     && echo "Install Complete" \

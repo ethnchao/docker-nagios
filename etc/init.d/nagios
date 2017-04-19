@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Our install-time configuration.
-prefix=/opt/nagios
+prefix=/usr/local/nagios
 exec_prefix=${prefix}
 NagiosBin=${exec_prefix}/bin/nagios
 NagiosCfgFile=${prefix}/etc/nagios.cfg

@@ -1,4 +1,0 @@
-41c41
-<   UNIQUE KEY `instance_id` (`instance_id`, `entry_time`, `entry_time_usec`, `logentry_id`)
----
->   UNIQUE KEY `instance_id` (`instance_id`, `entry_time`, `entry_time_usec`)
