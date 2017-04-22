@@ -133,11 +133,11 @@ install_host() {
 
 	cd $INSTALL_LOCATION
 	echo "$host   $AUTHFILE   $DOMAIN"
-	cat ${AUTHFILE}
+
 	if [[ -z $DOMAIN ]]; then
 		DOMAIN=$HOSTNAME
 	fi
-	smbclient -d 0 //${host}/c$ -A ${AUTHFILE} -W ${DOMAIN} -c  "mkdir \\temp1 ; cd /temp ; recurse ; prompt ; mput ncpa" 2>&1 | awk "{ print \"$(date -R): ${host}\", \$0}" >> ${LOGFILE}
+	smbclient -d 0 //${host}/c$ -A ${AUTHFILE} -W ${DOMAIN} -c  "mkdir \\temp ; cd /temp ; recurse ; prompt ; mput ncpa" 2>&1 | awk "{ print \"$(date -R): ${host}\", \$0}" >> ${LOGFILE}
 	RESULT=${PIPESTATUS[0]}
 
 	if [ $RESULT -gt 0 ]; then
@@ -155,6 +155,16 @@ install_host() {
 		continue
 	fi
 	OK "Installing NCPA" "${host}"
+
+	host_stage "Delete Tempfiles" "${host}"
+	smbclient -d 0 //${host}/c$ -A ${AUTHFILE} -W ${DOMAIN} -c  "cd /temp/ncpa ; rm ncpa.exe ; rm install.bat ; cd /temp/ ; rd ncpa ; cd / ; rd temp" 2>&1 | awk "{ print \"$(date -R): ${host}\", \$0}" >> ${LOGFILE}
+	RESULT=${PIPESTATUS[0]}
+
+	if [ $RESULT -gt 0 ]; then
+		error "Delete Tempfiles" "${host}" "Failed to delete tempfiles at ${host}, check ${LOGFILE}"
+		continue
+	fi
+	OK "Delete Tempfiles" "${host}"
 }
 
 for i in $HOSTLIST ; do

@@ -4,9 +4,9 @@ MAINTAINER ethnchao <maicheng.linyi@gmail.com>
 ENV NAGIOS_HOME             /usr/local/nagios
 ENV NAGIOS_USER             nagios
 ENV NAGIOS_GROUP            nagcmd
-ENV TIMEZONE                Asia/Shanghai
 ENV DEBIAN_FRONTEND         noninteractive
 ENV NRDP_TOKEN              culaio239ncgklak
+ENV NCPA_TOKEN              mfasjlk1asjd7flj3ly
 ENV MYSQL_USER              nagios
 ENV MYSQL_PASSWORD          nagios
 ENV MYSQL_ADDRESS           nagios_mysql
@@ -20,6 +20,7 @@ RUN apt-get update \
         python-pip \
         python-dev \
         runit \
+        parallel \
         sudo \
         apache2 \
         apache2-utils \
@@ -53,6 +54,7 @@ RUN apt-get update \
         mysql-client \
         libmysql++-dev \
         libmysqlclient-dev \
+        php7.0-xml \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --upgrade --no-cache-dir \
@@ -212,9 +214,9 @@ RUN cd /tmp \
         --enable-mysql \
     && make all \
     && make install \
-    && cp config/ndo2db.cfg-sample "${NAGIOS_HOME}"/etc/ndo2db.cfg \
-    && cp db/mysql.sql /tmp/mysql.sql \
-    && sed -i 's/ENGINE=MyISAM/ENGINE=MyISAM DEFAULT CHARSET=utf8/g' /tmp/mysql.sql \
+    && cp config/ndo2db.cfg-sample ${NAGIOS_HOME}/etc/ndo2db.cfg-sample \
+    && cp db/mysql.sql ${NAGIOS_HOME}/share/mysql-createdb.sql \
+    && sed -i 's/ENGINE=MyISAM/ENGINE=MyISAM DEFAULT CHARSET=utf8/g' ${NAGIOS_HOME}/share/mysql-createdb.sql \
     && cp config/ndomod.cfg-sample "${NAGIOS_HOME}"/etc/ndomod.cfg \
     && chmod 666 ${NAGIOS_HOME}/etc/ndomod.cfg \
     && pynag config --append "broker_module=${NAGIOS_HOME}/bin/ndomod.o config_file=${NAGIOS_HOME}/etc/ndomod.cfg" \
@@ -232,11 +234,7 @@ RUN cd /usr/local/ \
     && rm -f nrdp.tar.gz \
     && mv NagiosEnterprises-nrdp* nrdp \
     && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} nrdp \
-    && cd nrdp \
-    && sed -i "s,//\"mysecrettoken\",\"${NRDP_TOKEN}\"," server/config.inc.php \
-    && sed -i "s/nagcmd/${NAGIOS_GROUP}/" server/config.inc.php \
-    && sed -i "s,/usr/local/nagios,${NAGIOS_HOME}," server/config.inc.php \
-    && sed -i 's/;extension=php_xmlrpc.dll/extension=php_xmlrpc.dll/' /etc/php/7.0/apache2/php.ini \
+    && mv nrdp/server/config.inc.php nrdp/server/config.inc.php.example \
     && echo "<Directory \"/usr/local/nrdp\">\n\
     Options None\n\
     AllowOverride None\n\
@@ -261,14 +259,15 @@ RUN cd /tmp \
     && okconfig verify \
     && rm -rf /tmp/okconfig
 
-ADD okconfig/install_ncpa.bat /usr/share/okconfig/client/windows/ncpa/install.bat
+ADD okconfig/install_ncpa.bat /usr/share/okconfig/client/windows/install.bat.example
 ADD okconfig/install_nsclient.sh /usr/share/okconfig/client/windows/install_nsclient.sh
-ADD okconfig/install_okagent.sh /usr/share/okconfig/client/linux/install_okagent.sh
+ADD okconfig/install_okagent.sh /usr/share/okconfig/client/linux/install_okagent.sh.example
 
 RUN cd /usr/share/okconfig/client/ \
+    && mkdir -p windows/ncpa/ \
     && curl -LSf https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.exe \
         -o windows/ncpa/ncpa.exe \
-    && chmod +x windows/install_nsclient.sh linux/install_okagent.sh \
+    && chmod +x windows/install_nsclient.sh linux/install_okagent.sh.example \
     && curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb \
         -o /tmp/winexe.deb \
     && dpkg -i /tmp/winexe.deb \
@@ -317,7 +316,7 @@ RUN cd /etc/adagios/ \
     && git commit -m "Initial commit" \
     && pynag config --set cfg_dir="${NAGIOS_HOME}/etc/adagios" \
     && pynag config --append "broker_module=/usr/local/lib/mk-livestatus/livestatus.o ${NAGIOS_HOME}/var/livestatus" \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/etc/adagios/ /var/lib/adagios/ \
+    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/ /var/lib/adagios/ \
     && cd /opt/adagios/local/lib/python2.7/site-packages/adagios/ \
     && cp wsgi.py wsgi.py.origin \
     && sed -i 's/import os/import os, site/' wsgi.py \
@@ -340,14 +339,16 @@ Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
 
 ADD run.sh /run.sh
 ADD etc/sv/apache/run /etc/sv/apache/run
-# ADD etc/sv/nagios/run /etc/sv/nagios/run
+ADD etc/sv/carbon/run /etc/sv/carbon/run
 ADD etc/sv/postfix/run /etc/sv/postfix/run
+ADD etc/sv/graphios/run /etc/sv/graphios/run
 
 RUN rm -rf /etc/sv/getty-5 \
-    && chmod +x /run.sh /etc/sv/apache/run /etc/sv/postfix/run \
+    && chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run \
+        /etc/sv/postfix/run /etc/sv/carbon/run \
     && ln -s /etc/sv/* /etc/service \
     && cp /etc/services /var/spool/postfix/etc/ \
-    && ln -sf "/usr/share/zoneinfo/${TIMEZONE}" /etc/localtime
+    && ln -sf "/usr/share/zoneinfo/Asia/Shanghai" /etc/localtime
 
 ENV APACHE_LOCK_DIR /var/run
 ENV APACHE_LOG_DIR /var/log/apache2
@@ -356,4 +357,6 @@ EXPOSE 80
 EXPOSE 3000
 EXPOSE 8080
 
-CMD [ "/run.sh" ]
+ENTRYPOINT ["/run.sh"]
+
+CMD [ "nagios" ]

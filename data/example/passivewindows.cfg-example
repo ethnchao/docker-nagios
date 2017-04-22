@@ -12,21 +12,14 @@ define service {
 define service{
     use                     passive-service-HOSTNAME
     host_name               HOSTNAME
-    service_description     Users
+    service_description     Process Count
     check_command           check_dummy!0
 }
 
 define service{
     use                     passive-service-HOSTNAME
     host_name               HOSTNAME
-    service_description     Processes
-    check_command           check_dummy!0
-}
-
-define service{
-    use                     passive-service-HOSTNAME
-    host_name               HOSTNAME
-    service_description     Swap-Usage
+    service_description     Swap Usage
     check_command           check_dummy!0
     _graphitepostfix        swapusage
 }
@@ -34,7 +27,7 @@ define service{
 define service{
     use                     passive-service-HOSTNAME
     host_name               HOSTNAME
-    service_description     Memory-Usage
+    service_description     Memory Usage
     check_command           check_dummy!0
     _graphitepostfix        memoryusage
 }
@@ -42,7 +35,7 @@ define service{
 define service{
     use                     passive-service-HOSTNAME
     host_name               HOSTNAME
-    service_description     CPU-Usage
+    service_description     CPU Usage
     check_command           check_dummy!0
     _graphitepostfix        cpuusage
 }
@@ -50,7 +43,7 @@ define service{
 define service{
     use                     passive-service-HOSTNAME
     host_name               HOSTNAME
-    service_description     Partition-C-Usage
+    service_description     C Partition Usage
     check_command           check_dummy!0
-    _graphitepostfix        win-disk-c-usage
+    _graphitepostfix        cpartusage
 }

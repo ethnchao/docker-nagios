@@ -163,7 +163,7 @@ netcat
 
 软件安装相关：`python-pip`、 `git`、 `python-dev`
 
-系统服务：`runit`、 `sudo`
+系统服务：`runit`、 `sudo`、 `parallel`
 
 graphite
 
@@ -194,4 +194,10 @@ Nrpe
 
 ~~~~
 build-essential
+~~~~
+
+NRDP
+
+~~~~
+php7.0-xml
 ~~~~
