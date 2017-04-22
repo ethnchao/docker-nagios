@@ -47,8 +47,6 @@ shutdown() {
   echo Shutting Down
   /etc/init.d/nagios stop
   /etc/init.d/grafana-server stop
-  /etc/init.d/graphios stop
-  /opt/graphite/bin/carbon-cache.py stop
   ls /etc/service | SHELL=/bin/sh parallel --no-notice sv force-stop {}
   if [ -e /proc/$RUNSVDIR ]; then
     kill -HUP $RUNSVDIR
@@ -62,8 +60,6 @@ shutdown() {
 
 
 startup() {
-    # /opt/graphite/bin/carbon-cache.py start
-    # /etc/init.d/graphios start
     /etc/init.d/grafana-server start
     /etc/init.d/nagios start
 
