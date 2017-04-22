@@ -100,6 +100,7 @@ RUN mkdir -p /data/conf /data/plugin \
     && pynag delete --force WHERE host_name=localhost AND service_description=SSH \
     && cd ${NAGIOS_HOME}/etc/ \
     && echo "\$USER2\$=/data/plugin" >> resource.cfg \
+    && pynag config --append "cfg_dir=/data/conf" \
     && htpasswd -c -b -s htpasswd.users nagiosadmin nagios \
     && sed -i 's,/bin/mail,/usr/bin/mail,' ${NAGIOS_HOME}/etc/objects/commands.cfg \
     && echo 'define command{\n\
