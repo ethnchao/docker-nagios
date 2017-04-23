@@ -14,7 +14,7 @@ services:
       - nagios_mysql
     volumes:
       - ./data/plugin:/data/plugin
-      - ./data/conf:/data/conf
+      - ./data/conf:/usr/local/nagios/etc/mount
       - ./data/example:/data/example
 
   nagios_mysql:

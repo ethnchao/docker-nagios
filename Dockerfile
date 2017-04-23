@@ -90,7 +90,7 @@ RUN cd /tmp \
     && make install-init \
     && rm -rf /tmp/nagioscore
 
-RUN mkdir -p /data/conf /data/plugin \
+RUN mkdir -p ${NAGIOS_HOME}/etc/mount /data/plugin \
     && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /data ${NAGIOS_HOME} \
     && cd /etc/apache2/sites-available \
     && export DOC_ROOT="DocumentRoot $(echo $NAGIOS_HOME/share)" \
@@ -100,7 +100,7 @@ RUN mkdir -p /data/conf /data/plugin \
     && pynag delete --force WHERE host_name=localhost AND service_description=SSH \
     && cd ${NAGIOS_HOME}/etc/ \
     && echo "\$USER2\$=/data/plugin" >> resource.cfg \
-    && pynag config --append "cfg_dir=/data/conf" \
+    && pynag config --append "cfg_dir=${NAGIOS_HOME}/etc/mount" \
     && htpasswd -c -b -s htpasswd.users nagiosadmin nagios \
     && sed -i 's,/bin/mail,/usr/bin/mail,' ${NAGIOS_HOME}/etc/objects/commands.cfg \
     && echo 'define command{\n\
