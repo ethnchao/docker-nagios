@@ -220,7 +220,6 @@ RUN cd /tmp \
     && sed -i 's/ENGINE=MyISAM/ENGINE=MyISAM DEFAULT CHARSET=utf8/g' ${NAGIOS_HOME}/share/mysql-createdb.sql \
     && cp config/ndomod.cfg-sample "${NAGIOS_HOME}"/etc/ndomod.cfg \
     && chmod 666 ${NAGIOS_HOME}/etc/ndomod.cfg \
-    && pynag config --append "broker_module=${NAGIOS_HOME}/bin/ndomod.o config_file=${NAGIOS_HOME}/etc/ndomod.cfg" \
     && rm -rf /tmp/ndoutils
 
 RUN cd /tmp \
@@ -360,4 +359,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/run.sh"]
 
-CMD [ "nagios" ]
+CMD [ "main" ]

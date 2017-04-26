@@ -1,119 +1,142 @@
-# docker-nagios (Last version 4.2.1) 
+[![Build Status](https://api.travis-ci.org/ethnchao/docker-nagios.svg?branch=master)](https://travis-ci.org/ethnchao/docker-nagios)  [![](https://images.microbadger.com/badges/image/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own image badge on microbadger.com")  [![](https://images.microbadger.com/badges/version/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own version badge on microbadger.com")
+
+# docker-nagios
 
 [![](https://avatars0.githubusercontent.com/u/5666660?v=3&s=200)](https://www.nagios.org/ "Nagios")
 
-### Last update: 13/10/2016. Add NCPA (linux & windows agent) support
+Docker-Nagios provide Nagios service running on the docker container and a series of solution for Nagios: Adagios for Web Based Nagios Configuration, Grafana for monitor metric & dashboards, Ndoutils for transfer monitor data to MySQL Database, NCPA&NRDP for nagios passive checks.
 
-Build Status: 
-[![Build Status](https://api.travis-ci.org/ethnchao/docker-nagios.svg?branch=master)](https://travis-ci.org/ethnchao/docker-nagios)  [![](https://images.microbadger.com/badges/image/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own image badge on microbadger.com")  [![](https://images.microbadger.com/badges/version/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own version badge on microbadger.com")
+As the docker-image contains a large number of software, the following describes the various components of the version and the basic information:
 
-### Nagios
-Nagios is a host/service/network monitoring program written in C and released under the GNU General Public License, version 2. CGI programs are included to allow you to view the current status, history, etc via a web interface if you so desire.
+* [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
+* [`Nagios Core 4.3.1`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
+* [`Nagios Plugins 2.2.0`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
+* [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) Send Nagios spool data to graphite
+* [`Graphite master`](https://github.com/graphite-project/graphite-web/) Grafana's datasource
+* [`Grafana 4.2.0`](https://grafana.com/) The tool for beautiful monitoring and metric analytics & dashboards for Graphite, InfluxDB & Prometheus & More
+* [`NDOUtils 2.1.2`](https://github.com/NagiosEnterprises/ndoutils) Allow you save all the data to MySQL database
+* [`PyNag master`](https://github.com/pynag/pynag/) A command line tool for managing nagios configuration and provides a framework to write plugins
+* [`Okconfig master`](https://github.com/opinkerfi/okconfig) Provides a templated Nagios configuration, Adagios can use okconfig to quickly and easily configure Nagios
+* [`MK-livestatus 1.2.8p20`](http://mathias-kettner.com/) MK-livestatus can get Nagios status information, loaded as broker module into Nagios configuration, and Adagios uses mk-livestatus to get status information
+* [`Adagios 1.6.3-1`](https://github.com/opinkerfi/adagios.git) A web based Nagios configuration interface built to be simple and intuitive in design, exposing less of the clutter under the hood of nagios. Adagios is more lighter UI than Check_MK, based on mod_wsgi(so it cannot be used with Check_MK, Check_MK based on mod_python, already deprecated and conflict with mod_wsgi)
+* [`NRDP master`](https://github.com/NagiosEnterprises/nrdp) A flexible data transport mechanism and processor for Nagios. It uses standard ports protocols (HTTP(S) and XML for api response) and can be implemented as a replacement for NSCA. Used with NCPA, omg, those bloody names(nrpe,ncpa,nrds,nrdp,nsti...).
+* [`NCPA 2.0.3`](https://github.com/NagiosEnterprises/ncpa) The Nagios Cross-Platform Agent; a single monitoring agent that installs on all major operating systems. NCPA with a built-in web GUI, we will use ncpa for passive checks.
 
-### Docker
+Pull nagios image from DockerHub
 
-[Docker](https://www.docker.com/) allows you to package an application with all of its dependencies into a standardized unit for software development.
+~~~~shell
+$ docker pull ethnchao/nagios
+~~~~
 
-More information : 
+Build the Nagios image from github source
 
-* [What is docker](https://www.docker.com/what-docker)
-* [How to Create a Docker Business Case](https://www.brianchristner.io/how-to-create-a-docker-business-case/)
+~~~~shell
+$ docker build -t nagios .
+~~~~
 
-### Get to the point
+Run Nagios with docker
 
-This repository provides the *LATEST STABLE* version of the Nagios Docker & Docker-Compose file. 
-
-Component & Version:
-
-* [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/)
-* [`Nagios Core 4.2.1`](https://github.com/NagiosEnterprises/nagioscore.git)
-* [`Nagios Plugins 2.1.3`](https://github.com/nagios-plugins/nagios-plugins.git)
-* [`Nagiosgraph 1.5.2`](http://git.code.sf.net/p/nagiosgraph/git) Sorry PNPNagios, I much prefrere Nagiosgraph
-* [`NDOUtils 2.1.1`](https://github.com/NagiosEnterprises/ndoutils.git) Allow you save all the data to MySQL database
-* [`MySQL 5.6`](https://hub.docker.com/_/mysql/)
-* [`PyNag master`](https://github.com/pynag/pynag.git) A command line tool for managing nagios configuration and provides a framework to write plugins
-* [`Okconfig master`](https://github.com/opinkerfi/okconfig.git) A robust template mechanism for Nagios configuration files, required for Adagios
-* [`MK-livestatus 1.2.8p12`](http://mathias-kettner.com/) Broker module for nagios for high performance status information, required for Adagios
-* [`Adagios 1.6.3-1`](https://github.com/opinkerfi/adagios.git) A web based Nagios configuration interface built to be simple and intuitive in design, exposing less of the clutter under the hood of nagios. Adagios is more lighter UI than Check_MK, based on mod_wsgi, so it cannot be used with Check_MK (Check_MK based on mod_python, already deprecated and conflict with mod_wsgi)
-* [`NRDP master`](https://github.com/NagiosEnterprises/nrdp.git) A flexible data transport mechanism and processor for Nagios. It uses standard ports protocols (HTTP(S) and XML for api response) and can be implemented as **a replacement for NSCA**. Used with NCPA, oh, those names(nrpe,ncpa,nrds,nrdp,nsti)...
-* [`NCPA 1.8.1`](https://github.com/NagiosEnterprises/ncpa) The Nagios Cross-Platform Agent; a single monitoring agent that installs on all major operating systems. NCPA with a built-in web GUI, we will use ncpa for passive checks.
-* [`JR-Nagios-Plugins`](https://github.com/JasonRivers/nagios-plugins)
-* [`WL-Nagios-Plugins`](https://github.com/willixix/WL-NagiosPlugins)
-* [`JE-Nagios-Plugins`](https://github.com/justintime/nagios-plugins)
-
-### Configurations
-Nagios configuration lives in /opt/nagios/etc
-NagiosGraph configuration lives in /opt/nagiosgraph/etc
-Adagios configuration lives in /etc/adagios
-Okconfig configuration lives in /etc/okconfig.conf
-NRDP configuration lives in /opt/nrdp
-
-### Plugin
-
-Nagios plugin lives in /usr/local/nagios/libexec.
-
-Mount your own plugin at /data/plugin
-
-### Docker Compose
-
-Use `docker-compose up` to up containers, at the very first time start, will write database table structure to MySQL.
-
-#### Network:
-[```4.2.1 (latest)```](https://github.com/ethnchao/Docker-Nagios/blob/master/Docker-Compose/docker-compose.yml)
-
-#### Database configuration
-
-* `MYSQL_USER:` nagios
-* `MYSQL_PASSWORD:` your_mysql_password
-* `MYSQL_ADDRESS:` mysql
-* `MYSQL_DATABASE:` nagios
-
-For best results your Nagios image should have access to both IPv4 & IPv6 networks 
-
-#### Nagios & Adagios web login
+~~~~shell
+$ docker run --name nagios -p 80:80 -p 3000:3000 -d ethnchao/nagios
+~~~~
 
 Addresses:
 
-```sh
+~~~~shell
 # Nagios
-http://nagios-server-address/
+http://127.0.0.1/
 
 # Adagios
-http://nagios-server-address/adagios
+http://127.0.0.1/adagios
 
 # NRDP
-http://nagios-server-address/nrdp
+http://127.0.0.1/nrdp
 
-# NCPA (Client Side)
+# Grafana
+http://127.0.0.1:3000/
+
+# NCPA (Client)
 https://ncpa-agent-address:5693/
-```
+~~~~
 
-Default authorization:
+Nagios web login:
 
-* `username:` nagiosadmin
-* `password:` nagios
+> `username`: `nagiosadmin`
+>
+> `password`: `nagios`
 
-Alternative authorization, by adding some environment variables to docker-compose.yml, such as:
+Grafana web login:
 
-````yml
-services:
-  nagios:
-    # other settings section
-    environment:
-      - MYSQL_USER=nagios
-      - MYSQL_PASSWORD=nagios
-      - MYSQL_ADDRESS=mysql
-      - MYSQL_DATABASE=nagios
-      - NAGIOSADMIN_USER=your_login_user
-      - NAGIOSADMIN_PASS=your_login_pass
-````
+> `username`: `admin`
+>
+> `password`: `admin`
+
+If you need to use a custom login user name and password, you can run the container with the environment variables: `NAGIOSADMIN_USER` and` NAGIOSADMIN_PASS`.
+
+~~~~shell
+$ docker run --name nagios -p 9001:80 -p 3000:3000 \
+  -e NAGIOSADMIN_USER=john \
+  -e NAGIOSADMIN_PASS=secret_code \
+  -d ethnchao/nagios
+~~~~
+
+In some features, such as using the Adagios - Okconfig - Install Agent, you need to configure the NRDP server address in the remote client. The IP + port of the address is also the address of the Nagios server, but when you use the Docker to run the container, Nagios Do not know what their own server address, so when we run the container, passing the server address to it.
+
+~~~~shell
+$ docker run --name nagios -p 9001:80 -p 3000:3000 -d ethnchao/nagios --server-url http://172.17.242.190:9001
+~~~~
+
+You can choose to mount additional configuration files, plugin, okconfig-example to the container, such as the additional configuration file on /data/conf, plugin on /data/plugin, okconfig-example on /data/example.
+
+~~~~shell
+$ docker run --name nagios -p 80:80 -p 3000:3000 \
+  -v /data/conf:/usr/local/nagios/etc/mount \
+  -v /data/plugin:/data/plugin \
+  -v /data/example:/data/example \
+  -d ethnchao/nagios
+~~~~
+
+If you need to store the monitoring information to the MySQL database, you need to enable Ndoutils, which there are two cases：
+
+
+1. If you already executed the Ndoutils database initialization script in the MySQL database, then run this container with option: `--enable-ndo`.
+
+~~~~shell
+$ docker run --name nagios -p 80:80 -p 3000:3000 \
+  -e MYSQL_USER=nagios -e MYSQL_PASSWORD=nagios \
+  -e MYSQL_ADDRESS=172.17.242.178 -e MYSQL_DATABASE=nagios \
+  -d ethnchao/nagios --enable-ndo
+~~~~
+
+2. If you did not execute the Ndoutils initalization script in the MySQL database, you can run this container with option: `--enable-ndo --create-db`
+
+~~~~shell
+$ docker run --name nagios -p 80:80 -p 3000:3000 \
+  -e MYSQL_USER=nagios -e MYSQL_PASSWORD=nagios \
+  -e MYSQL_ADDRESS=172.17.242.178 -e MYSQL_DATABASE=nagios \
+  -d ethnchao/nagios --enable-ndo --create-db
+~~~~
+
+Finally we recommend using docker-compose to run Nagios with MySQL containers, check this [docker-compose.yml][72bb6132] 。
+
+## Configuration file location
+
+Software | Config file location
+---------|---------------------------
+Nagios   | /usr/local/nagios/etc
+Adagios  | /etc/adagios
+Okconfig | /etc/okconfig.conf
+NRDP     | /usr/local/nrdp
+Graphios | /etc/graphios/graphios.cfg
+Graphite | /opt/graphite/conf/
+
 
 ## Packages Dependency
 
-Dockerfile中为了缩小镜像大小，在同一个`RUN`命令中使用apt和pip安装了很多依赖包，每个软件只依赖其中的部分包，这里说明下依赖包的对应关系，对应关系的来源多数是软件的官方文档，部分为了解决一些问题而补充的包。
+To reduce the size of the docker-image, we use the apt and pip to install a lot of packages in the same `RUN` instruction, each software(like adagios/nagios-plugins) only depends on some of the packages, the following records the software depends on which packages, dependencies all come from official documents of the software, some from the actual operation of the adjustment.
 
-Nagioscore 需要以下依赖：
-(这里的软件名称较官方文档要少些，因为部分软件有依赖关系，无需写出)
+Nagioscore needs the following dependencies:
+(The software list is less than the official documents, some of the official website of the software has been dependent on each other, no need to write)
 
 ~~~~
 apache2 \
@@ -132,13 +155,13 @@ libssl-dev \
 unzip
 ~~~~
 
-Nagios 其他功能：
+Nagios command: notify-by-mail
 
 ~~~~
 bsd-mailx
 ~~~~
 
-Nagios-Plugin编译安装时需要以下依赖：
+The following dependencies are required for the Nagios-Plugin compilation installation:
 
 ~~~~
 m4 \
@@ -147,7 +170,7 @@ automake \
 autoconf
 ~~~~
 
-Nagios-Plugins各插件运行时可能会使用的依赖，非必须：
+The dependencies that may be used when the Nagios plugin is running：
 
 ~~~~
 iputils-ping \
@@ -161,11 +184,15 @@ snmp-mibs-downloader \
 netcat
 ~~~~
 
-软件安装相关：`python-pip`、 `git`、 `python-dev`
+Software installation related：
 
-系统服务：`runit`、 `sudo`、 `parallel`
+`python-pip`、 `git`、 `python-dev`
 
-graphite
+System services：
+
+`runit`、 `sudo`、 `parallel`
+
+The following dependencies are required for the Graphite installation:
 
 ~~~~
 apache2 \
@@ -176,13 +203,13 @@ libffi-dev \
 libapache2-mod-wsgi
 ~~~~
 
-graphios
+The following dependencies are required for the Graphios installation:
 
 ~~~~
 sudo
 ~~~~
 
-ndoutils
+The following dependencies are required for the Ndoutils installation:
 
 ~~~~
 mysql-client \
@@ -190,14 +217,16 @@ libmysql++-dev \
 libmysqlclient-dev
 ~~~~
 
-Nrpe
+The following dependencies are required for the Nrpe installation:
 
 ~~~~
 build-essential
 ~~~~
 
-NRDP
+The following dependencies are required when the NRDP is running:
 
 ~~~~
 php7.0-xml
 ~~~~
+
+[72bb6132]: https://github.com/ethnchao/docker-nagios/blob/master/docker-compose.yml "docker-compose.yml"

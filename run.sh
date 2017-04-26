@@ -2,6 +2,7 @@
 set -e
 
 CREATE_DB=0
+ENABLE_NDO=0
 SERVER_URL="http://your-nagios-address"
 MYSQL_CREATEDB_SQL="${NAGIOS_HOME}/share/mysql-createdb.sql"
 
@@ -17,12 +18,6 @@ setup_config() {
     sed -i -e "s/NCPA_TOKEN/${NCPA_TOKEN}/" \
         -e "s/NRDP_TOKEN/${NRDP_TOKEN}/" \
         -e "s,NRDP_URL,${NRDP_URL}," windows/ncpa/install.bat
-    cd ${NAGIOS_HOME}/etc/ || exit 1
-    cp -f ndo2db.cfg-sample ndo2db.cfg
-    sed -i -e "s/^db_host=.*/db_host=${MYSQL_ADDRESS}/" \
-        -e "s/^db_name=.*/db_name=${MYSQL_DATABASE}/" \
-        -e "s/^db_user=.*/db_user=${MYSQL_USER}/" \
-        -e "s/^db_pass=.*/db_pass=${MYSQL_PASSWORD}/" ndo2db.cfg
     cd /usr/local/nrdp/server || exit 1
     cp -f config.inc.php.example config.inc.php
     sed -i -e "s,//\"mysecrettoken\",\"${NRDP_TOKEN}\"," \
@@ -32,8 +27,19 @@ setup_config() {
 }
 
 
+enable_ndo() {
+    cd ${NAGIOS_HOME}/etc/ || exit 1
+    cp -f ndo2db.cfg-sample ndo2db.cfg
+    sed -i -e "s/^db_host=.*/db_host=${MYSQL_ADDRESS}/" \
+        -e "s/^db_name=.*/db_name=${MYSQL_DATABASE}/" \
+        -e "s/^db_user=.*/db_user=${MYSQL_USER}/" \
+        -e "s/^db_pass=.*/db_pass=${MYSQL_PASSWORD}/" ndo2db.cfg
+    pynag config --append "broker_module=${NAGIOS_HOME}/bin/ndomod.o config_file=${NAGIOS_HOME}/etc/ndomod.cfg"
+}
+
+
 create_database() {
-    wait-for-it "${MYSQL_ADDRESS}:3306"
+    wait-for-it -t 60 "${MYSQL_ADDRESS}:3306"
     mysql -u${MYSQL_USER} \
         -p${MYSQL_PASSWORD} \
         -h${MYSQL_ADDRESS} \
@@ -79,6 +85,10 @@ main() {
         setup_config
     fi
 
+    if [ $ENABLE_NDO -eq 1 ]; then
+        enable_ndo
+    fi
+
     if [ $CREATE_DB -eq 1 ] && [ -f $MYSQL_CREATEDB_SQL ]; then
         create_database
     fi
@@ -88,18 +98,21 @@ main() {
         chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME}/etc/htpasswd.users
     fi
 
-    chmod +x ${NAGIOS_HOME}/libexec/* /data/plugin/*
+    find ${NAGIOS_HOME}/libexec/ -type f -exec chmod +x {} \;
+    find /data/plugin/ -type f -exec chmod +x {} \;
     startup
 }
 
 
-if [ "$1" = 'nagios' ]; then
-    shift
+if [ "${1:0:1}" = '-' ]; then
     while [ $# -gt 0 ]; do
         arg=$1 ; shift
         case $arg in
         "--create-db")
             CREATE_DB=1
+            ;;
+        "--enable-ndo")
+            ENABLE_NDO=1
             ;;
         "--server-url")
             SERVER_URL="$1" ; shift;;
@@ -107,5 +120,5 @@ if [ "$1" = 'nagios' ]; then
     done
     main
 else
-    exec "$@"
+    "$@"
 fi
