@@ -45,9 +45,6 @@ def main():
         sys.exit(1)
     try:
         legacyChannel(dest, msg)
-        # if group:
-        # else:
-        #     smartQQChannel(dest, msg)
     except Exception:
         raise
 
