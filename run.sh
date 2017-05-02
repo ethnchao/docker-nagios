@@ -95,9 +95,9 @@ main() {
 
     if [ "xxx${NAGIOSADMIN_USER}" != "xxx" ] && [ "xxx${NAGIOSADMIN_PASS}" != "xxx" ]; then
         htpasswd -c -b -s ${NAGIOS_HOME}/etc/htpasswd.users ${NAGIOSADMIN_USER} ${NAGIOSADMIN_PASS}
-        chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME}/etc/htpasswd.users
     fi
-
+    
+    chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME}/etc/
     find ${NAGIOS_HOME}/libexec/ -type f -exec chmod +x {} \;
     find /data/plugin/ -type f -exec chmod +x {} \;
     startup
