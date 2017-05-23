@@ -35,6 +35,7 @@ enable_ndo() {
         -e "s/^db_user=.*/db_user=${MYSQL_USER}/" \
         -e "s/^db_pass=.*/db_pass=${MYSQL_PASSWORD}/" ndo2db.cfg
     pynag config --append "broker_module=${NAGIOS_HOME}/bin/ndomod.o config_file=${NAGIOS_HOME}/etc/ndomod.cfg"
+    rm -f ${NAGIOS_HOME}/var/ndo.sock
 }
 
 
@@ -96,7 +97,7 @@ main() {
     if [ "xxx${NAGIOSADMIN_USER}" != "xxx" ] && [ "xxx${NAGIOSADMIN_PASS}" != "xxx" ]; then
         htpasswd -c -b -s ${NAGIOS_HOME}/etc/htpasswd.users ${NAGIOSADMIN_USER} ${NAGIOSADMIN_PASS}
     fi
-    
+
     chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME}/etc/
     find ${NAGIOS_HOME}/libexec/ -type f -exec chmod +x {} \;
     find /data/plugin/ -type f -exec chmod +x {} \;
