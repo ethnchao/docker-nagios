@@ -1,11 +1,11 @@
 version: '2'
 services:
   nagios:
-    image: nagios
-    command: --enable-ndo --create-db --server-url http://192.168.120.236
+    image: 192.168.120.236:5000/nagios:4.3.1
+    command: --enable-ndo --create-db --server-url http://192.168.120.227:4000
     ports:
-      - 80:80
-      - 4000:3000
+      - 4000:80
+      - 4001:3000
     restart: always
     networks:
       - nagios-network
