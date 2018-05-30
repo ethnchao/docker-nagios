@@ -18,7 +18,7 @@ ENV NRPE_VERSION            3.2.1
 ENV NDOUTILS_VERSION        2.1.3
 ENV NRDP_VERSION            1.5.2
 ENV OKCONFIG_VERSION        1.3.2-1
-ENV NCPA_VERSION            2.0.3
+ENV NCPA_VERSION            2.1.3
 ENV MK_LIVESTATUS_VERSION   1.2.8p20
 ENV ADAGIOS_VERSION         1.6.3-1
 
@@ -280,15 +280,13 @@ ADD okconfig/install_ncpa.bat /usr/share/okconfig/client/windows/install.bat.exa
 ADD okconfig/install_nsclient.sh /usr/share/okconfig/client/windows/install_nsclient.sh
 ADD okconfig/install_okagent.sh /usr/share/okconfig/client/linux/install_okagent.sh.example
 
-RUN cd /usr/share/okconfig/client/ \
-    && mkdir -p windows/ncpa/ \
-    && curl -LSf https://assets.nagios.com/downloads/ncpa/ncpa-${NCPA_VERSION}.exe \
-        -o windows/ncpa/ncpa.exe \
-    && chmod +x windows/install_nsclient.sh linux/install_okagent.sh.example \
-    && curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb \
-        -o /tmp/winexe.deb \
-    && dpkg -i /tmp/winexe.deb \
-    && rm -f /tmp/winexe.deb
+RUN cd /usr/share/okconfig/client/ && \
+  mkdir -p windows/ncpa/ && \
+  curl -L https://assets.nagios.com/downloads/ncpa/archived/${NCPA_VERSION}/ncpa-${NCPA_VERSION}.exe -o windows/ncpa/ncpa.exe && \
+  chmod +x windows/install_nsclient.sh linux/install_okagent.sh.example && \
+  curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb -o /tmp/winexe.deb && \
+  dpkg -i /tmp/winexe.deb && \
+  rm -f /tmp/winexe.deb
 
 RUN cd /tmp \
     && curl http://mathias-kettner.com/download/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz \
