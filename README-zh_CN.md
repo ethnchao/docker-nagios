@@ -10,12 +10,12 @@ Adagios 用于在网页端处理各类配置和总览状态查看，Grafana 用�
 由于本docker-image包含软件众多，下面介绍下各组件的版本和基本介绍信息：
 
 * [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
-* [`Nagios Core 4.3.1`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - 社区版本
+* [`Nagios Core 4.3.4`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - 社区版本
 * [`Nagios Plugins 2.2.0`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
 * [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) 发送Nagios spool数据给Graphite
 * [`Graphite master`](https://github.com/graphite-project/graphite-web/) Grafana 的数据源
 * [`Grafana 4.2.0`](https://grafana.com/) 用于Graphite，InfluxDB和Prometheus等监控的度量分析和仪表盘的工具，图形界面很赞
-* [`NDOUtils 2.1.2`](https://github.com/NagiosEnterprises/ndoutils) 允许你把Nagios的监控数据存储在MySQL 数据库
+* [`NDOUtils 2.1.3`](https://github.com/NagiosEnterprises/ndoutils) 允许你把Nagios的监控数据存储在MySQL 数据库
 * [`PyNag master`](https://github.com/pynag/pynag/) 一个命令行工具，用于管理Nagios的配置，并提供了框架用于编写插件
 * [`Okconfig master`](https://github.com/opinkerfi/okconfig) 提供了模板化的Nagios配置方式，Adagios可使用okconfig来方便快速的配置Nagios
 * [`MK-livestatus 1.2.8p20`](http://mathias-kettner.com/) MK-livestatus可以获取Nagios状态信息，作为broker module 加载到 Nagios配置中，, Adagios使用mk-livestatus来获取状态信息

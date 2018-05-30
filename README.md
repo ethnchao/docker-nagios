@@ -9,12 +9,12 @@ Docker-Nagios provide Nagios service running on the docker container and a serie
 As the docker-image contains a large number of software, the following describes the various components of the version and the basic information:
 
 * [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
-* [`Nagios Core 4.3.1`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
+* [`Nagios Core 4.3.4`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
 * [`Nagios Plugins 2.2.0`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
 * [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) Send Nagios spool data to graphite
 * [`Graphite master`](https://github.com/graphite-project/graphite-web/) Grafana's datasource
 * [`Grafana 4.2.0`](https://grafana.com/) The tool for beautiful monitoring and metric analytics & dashboards for Graphite, InfluxDB & Prometheus & More
-* [`NDOUtils 2.1.2`](https://github.com/NagiosEnterprises/ndoutils) Allow you save all the data to MySQL database
+* [`NDOUtils 2.1.3`](https://github.com/NagiosEnterprises/ndoutils) Allow you save all the data to MySQL database
 * [`PyNag master`](https://github.com/pynag/pynag/) A command line tool for managing nagios configuration and provides a framework to write plugins
 * [`Okconfig master`](https://github.com/opinkerfi/okconfig) Provides a templated Nagios configuration, Adagios can use okconfig to quickly and easily configure Nagios
 * [`MK-livestatus 1.2.8p20`](http://mathias-kettner.com/) MK-livestatus can get Nagios status information, loaded as broker module into Nagios configuration, and Adagios uses mk-livestatus to get status information

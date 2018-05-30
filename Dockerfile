@@ -12,8 +12,18 @@ ENV MYSQL_PASSWORD          nagios
 ENV MYSQL_ADDRESS           nagios_mysql
 ENV MYSQL_DATABASE          nagios
 
-ADD etc/apt/sources.list /etc/apt/sources.list
+ENV NAGIOS_VERSION          4.3.4
+ENV NAGIOS_PLUGINS_VERSION  2.2.1
+ENV NRPE_VERSION            3.2.1
+ENV NDOUTILS_VERSION        2.1.3
+ENV NCPA_VERSION            2.0.3
+ENV MK_LIVESTATUS_VERSION   1.2.8p20
+ENV ADAGIOS_VERSION         1.6.3-1
 
+# Remove below if you want use default apt mirror sites
+ADD config/apt/sources.list /etc/apt/sources.list
+# Remove below if you want use default pip mirror sites
+ADD config/pip/pip.conf /root/.config/pip/pip.conf
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         git \
@@ -72,38 +82,42 @@ RUN pip install \
     --no-binary=:all: \
     https://github.com/pynag/pynag/tarball/master
 
-RUN cd /tmp \
-    && git clone https://github.com/NagiosEnterprises/nagioscore.git \
-    && cd nagioscore \
-    && git checkout tags/nagios-4.3.1 \
-    && ./configure \
+# https://github.com/NagiosEnterprises/nagioscore/archive/nagios-${NAGIOS_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/nagioscore/-/archive/nagios-${NAGIOS_VERSION}/nagioscore-nagios-${NAGIOS_VERSION}.zip
+
+RUN cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/nagioscore/-/archive/nagios-${NAGIOS_VERSION}/nagioscore-nagios-${NAGIOS_VERSION}.zip -o nagioscore.zip && \
+  unzip nagioscore.zip && \
+  mv nagioscore-* nagioscore && \
+  cd nagioscore && \
+  ./configure \
     --prefix=${NAGIOS_HOME} \
     --enable-event-broker \
     --with-command-group=${NAGIOS_GROUP} \
     --with-nagios-user=${NAGIOS_USER} \
-    --with-nagios-group=${NAGIOS_GROUP} \
-    && make all \
-    && make install \
-    && make install-config \
-    && make install-commandmode \
-    && make install-webconf \
-    && make install-init \
-    && rm -rf /tmp/nagioscore
+    --with-nagios-group=${NAGIOS_GROUP} && \
+  make all && \
+  make install && \
+  make install-config && \
+  make install-commandmode && \
+  make install-webconf && \
+  make install-init && \
+  rm -rf /tmp/nagioscore /tmp/nagioscore.zip
 
-RUN mkdir -p ${NAGIOS_HOME}/etc/mount /data/plugin \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /data ${NAGIOS_HOME} \
-    && cd /etc/apache2/sites-available \
-    && export DOC_ROOT="DocumentRoot $(echo $NAGIOS_HOME/share)" \
-    && sed -i "s,DocumentRoot.*,$DOC_ROOT," 000-default.conf \
-    && sed -i "s,</VirtualHost>,<IfDefine ENABLE_USR_LIB_CGI_BIN>\nScriptAlias /cgi-bin/ ${NAGIOS_HOME}/sbin/\n</IfDefine>\n</VirtualHost>," 000-default.conf \
-    && a2enmod cgi \
-    && pynag delete --force WHERE host_name=localhost AND service_description=SSH \
-    && cd ${NAGIOS_HOME}/etc/ \
-    && echo "\$USER2\$=/data/plugin" >> resource.cfg \
-    && pynag config --append "cfg_dir=${NAGIOS_HOME}/etc/mount" \
-    && htpasswd -c -b -s htpasswd.users nagiosadmin nagios \
-    && sed -i 's,/bin/mail,/usr/bin/mail,' ${NAGIOS_HOME}/etc/objects/commands.cfg \
-    && echo 'define command{\n\
+RUN mkdir -p ${NAGIOS_HOME}/etc/mount /data/plugin && \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /data ${NAGIOS_HOME} && \
+  cd /etc/apache2/sites-available && \
+  export DOC_ROOT="DocumentRoot $(echo $NAGIOS_HOME/share)" && \
+  sed -i "s,DocumentRoot.*,$DOC_ROOT," 000-default.conf && \
+  sed -i "s,</VirtualHost>,<IfDefine ENABLE_USR_LIB_CGI_BIN>\nScriptAlias /cgi-bin/ ${NAGIOS_HOME}/sbin/\n</IfDefine>\n</VirtualHost>," 000-default.conf && \
+  a2enmod cgi && \
+  pynag delete --force WHERE host_name=localhost AND service_description=SSH && \
+  cd ${NAGIOS_HOME}/etc/ && \
+  echo "\$USER2\$=/data/plugin" >> resource.cfg && \
+  pynag config --append "cfg_dir=${NAGIOS_HOME}/etc/mount" && \
+  htpasswd -c -b -s htpasswd.users nagiosadmin nagios && \
+  sed -i 's,/bin/mail,/usr/bin/mail,' ${NAGIOS_HOME}/etc/objects/commands.cfg && \
+  echo 'define command{\n\
     command_name    check_nrpe\n\
     command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c $ARG1$\n\
 }\n\
@@ -113,26 +127,34 @@ define command{\n\
     command_line    $USER1$/check_dummy $ARG1$\n\
 }\n\n' >> objects/commands.cfg
 
-RUN cd /tmp \
-    && git clone https://github.com/nagios-plugins/nagios-plugins.git \
-    && cd nagios-plugins \
-    && git checkout tags/release-2.2.0 \
-    && ./tools/setup \
-    && ./configure --prefix=${NAGIOS_HOME} \
-    && make \
-    && make install \
-    && cd /tmp \
-    && rm -rf /tmp/nagios-plugins
+# https://github.com/nagios-plugins/nagios-plugins/archive/release-${NAGIOS_PLUGINS_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/nagios-plugins/-/archive/release-${NAGIOS_PLUGINS_VERSION}/nagios-plugins-release-${NAGIOS_PLUGINS_VERSION}.zip
 
-RUN cd /tmp \
-    && git clone https://github.com/NagiosEnterprises/nrpe.git \
-    && cd nrpe \
-    && ./configure --prefix=${NAGIOS_HOME} \
-        --with-nagios-user=${NAGIOS_USER} \
-        --with-nagios-group=${NAGIOS_GROUP} \
-    && make check_nrpe \
-    && make install-plugin \
-    && rm -rf /tmp/nrpe
+RUN cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/nagios-plugins/-/archive/release-${NAGIOS_PLUGINS_VERSION}/nagios-plugins-release-${NAGIOS_PLUGINS_VERSION}.zip -o nagios-plugins.zip && \
+  unzip nagios-plugins.zip && \
+  mv nagios-plugins-* nagios-plugins && \
+  cd nagios-plugins && \
+  git checkout tags/release-${NAGIOS_PLUGINS_VERSION} && \
+  ./tools/setup && \
+  ./configure --prefix=${NAGIOS_HOME} && \
+  make && \
+  make install && \
+  cd /tmp && \
+  rm -rf /tmp/nagios-plugins /tmp/nagios-plugins.zip
+
+# https://github.com/NagiosEnterprises/nrpe/archive/nrpe-${NRPE_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/nrpe/-/archive/nrpe-${NRPE_VERSION}/nrpe-nrpe-${NRPE_VERSION}.zip
+
+RUN cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/nrpe/-/archive/nrpe-${NRPE_VERSION}/nrpe-nrpe-${NRPE_VERSION}.zip -o nrpe.zip && \
+  unzip nrpe.zip && \
+  mv nrpe-* nrpe && \
+  cd nrpe && \
+  ./configure --prefix=${NAGIOS_HOME} --with-nagios-user=${NAGIOS_USER} --with-nagios-group=${NAGIOS_GROUP} && \
+  make check_nrpe && \
+  make install-plugin && \
+  rm -rf /tmp/nrpe /tmp/nrpe.zip
 
 RUN mkdir -p /usr/share/snmp/mibs \
     && ln -s /usr/share/snmp/mibs ${NAGIOS_HOME}/libexec/mibs \
@@ -209,7 +231,7 @@ RUN echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" >> /et
 RUN cd /tmp \
     && git clone https://github.com/NagiosEnterprises/ndoutils.git \
     && cd ndoutils \
-    && git checkout tags/2.1.2 \
+    && git checkout ndoutils-${NDOUTILS_VERSION} \
     && ./configure \
         --prefix="${NAGIOS_HOME}" \
         --enable-mysql \
@@ -265,7 +287,7 @@ ADD okconfig/install_okagent.sh /usr/share/okconfig/client/linux/install_okagent
 
 RUN cd /usr/share/okconfig/client/ \
     && mkdir -p windows/ncpa/ \
-    && curl -LSf https://assets.nagios.com/downloads/ncpa/ncpa-2.0.3.exe \
+    && curl -LSf https://assets.nagios.com/downloads/ncpa/ncpa-${NCPA_VERSION}.exe \
         -o windows/ncpa/ncpa.exe \
     && chmod +x windows/install_nsclient.sh linux/install_okagent.sh.example \
     && curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb \
@@ -274,7 +296,7 @@ RUN cd /usr/share/okconfig/client/ \
     && rm -f /tmp/winexe.deb
 
 RUN cd /tmp \
-    && curl http://mathias-kettner.com/download/mk-livestatus-1.2.8p20.tar.gz \
+    && curl http://mathias-kettner.com/download/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz \
         -o mk-livestatus.tar.gz \
     && tar zxf mk-livestatus.tar.gz \
     && rm -f mk-livestatus.tar.gz \
@@ -290,7 +312,7 @@ RUN virtualenv /opt/adagios \
     && cd /tmp \
     && git clone https://github.com/opinkerfi/adagios.git \
     && cd adagios \
-    && git checkout tags/adagios-1.6.3-1 \
+    && git checkout tags/adagios-${ADAGIOS_VERSION} \
     && pip install \
         --no-cache-dir \
         --no-binary=:all: \
@@ -338,10 +360,10 @@ Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
     && a2ensite adagios
 
 ADD run.sh /run.sh
-ADD etc/sv/apache/run /etc/sv/apache/run
-ADD etc/sv/carbon/run /etc/sv/carbon/run
-ADD etc/sv/postfix/run /etc/sv/postfix/run
-ADD etc/sv/graphios/run /etc/sv/graphios/run
+ADD config/sv/apache/run /etc/sv/apache/run
+ADD config/sv/carbon/run /etc/sv/carbon/run
+ADD config/sv/postfix/run /etc/sv/postfix/run
+ADD config/sv/graphios/run /etc/sv/graphios/run
 
 RUN rm -rf /etc/sv/getty-5 \
     && chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run \
