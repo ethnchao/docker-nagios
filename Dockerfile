@@ -16,6 +16,8 @@ ENV NAGIOS_VERSION          4.3.4
 ENV NAGIOS_PLUGINS_VERSION  2.2.1
 ENV NRPE_VERSION            3.2.1
 ENV NDOUTILS_VERSION        2.1.3
+ENV NRDP_VERSION            1.5.2
+ENV OKCONFIG_VERSION        1.3.2-1
 ENV NCPA_VERSION            2.0.3
 ENV MK_LIVESTATUS_VERSION   1.2.8p20
 ENV ADAGIOS_VERSION         1.6.3-1
@@ -24,63 +26,58 @@ ENV ADAGIOS_VERSION         1.6.3-1
 ADD config/apt/sources.list /etc/apt/sources.list
 # Remove below if you want use default pip mirror sites
 ADD config/pip/pip.conf /root/.config/pip/pip.conf
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        git \
-        python-pip \
-        python-dev \
-        runit \
-        parallel \
-        sudo \
-        apache2 \
-        apache2-utils \
-        autoconf \
-        bc \
-        build-essential \
-        dc \
-        gawk \
-        gettext \
-        gperf \
-        libapache2-mod-php \
-        libgd2-xpm-dev \
-        libmcrypt-dev \
-        libssl-dev \
-        unzip \
-        bsd-mailx \
-        m4 \
-        automake \
-        iputils-ping \
-        fping \
-        postfix \
-        libnet-snmp-perl \
-        smbclient \
-        snmp \
-        snmpd \
-        snmp-mibs-downloader \
-        netcat \
-        libcairo2-dev \
-        libffi-dev \
-        libapache2-mod-wsgi \
-        mysql-client \
-        libmysql++-dev \
-        libmysqlclient-dev \
-        php7.0-xml \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --upgrade --no-cache-dir \
-        pip \
-        distribute \
-        virtualenv
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends \
+    git \
+    python-pip \
+    python-dev \
+    python3-dev \
+    runit \
+    parallel \
+    sudo \
+    apache2 \
+    apache2-utils \
+    autoconf \
+    bc \
+    build-essential \
+    dc \
+    gawk \
+    gettext \
+    gperf \
+    libapache2-mod-php \
+    libgd2-xpm-dev \
+    libmcrypt-dev \
+    libssl-dev \
+    unzip \
+    bsd-mailx \
+    m4 \
+    automake \
+    iputils-ping \
+    fping \
+    postfix \
+    libnet-snmp-perl \
+    smbclient \
+    snmp \
+    snmpd \
+    snmp-mibs-downloader \
+    netcat \
+    libcairo2-dev \
+    libffi-dev \
+    libapache2-mod-wsgi \
+    mysql-client \
+    libmysql++-dev \
+    libmysqlclient-dev \
+    php7.0-xml && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* && \
+  pip install --upgrade --no-cache-dir pip distribute virtualenv
 
-RUN ( id -u $NAGIOS_USER || useradd --system -d $NAGIOS_HOME $NAGIOS_USER ) \
-    && ( egrep -i "^${NAGIOS_GROUP}" /etc/group || groupadd $NAGIOS_GROUP ) \
-    && usermod -a -G $NAGIOS_GROUP $NAGIOS_USER \
-    && usermod -a -G $NAGIOS_GROUP www-data
+RUN ( id -u $NAGIOS_USER || useradd --system -d $NAGIOS_HOME $NAGIOS_USER ) && \
+  ( egrep -i "^${NAGIOS_GROUP}" /etc/group || groupadd $NAGIOS_GROUP ) && \
+  usermod -a -G $NAGIOS_GROUP $NAGIOS_USER && \
+  usermod -a -G $NAGIOS_GROUP www-data
 
-RUN pip install \
-    --no-cache-dir \
-    --no-binary=:all: \
-    https://github.com/pynag/pynag/tarball/master
+RUN pip install --no-cache-dir --no-binary=:all: https://github.com/pynag/pynag/tarball/master
 
 # https://github.com/NagiosEnterprises/nagioscore/archive/nagios-${NAGIOS_VERSION}.zip
 # http://192.168.120.155:8000/ethnchao/nagioscore/-/archive/nagios-${NAGIOS_VERSION}/nagioscore-nagios-${NAGIOS_VERSION}.zip
@@ -135,7 +132,6 @@ RUN cd /tmp && \
   unzip nagios-plugins.zip && \
   mv nagios-plugins-* nagios-plugins && \
   cd nagios-plugins && \
-  git checkout tags/release-${NAGIOS_PLUGINS_VERSION} && \
   ./tools/setup && \
   ./configure --prefix=${NAGIOS_HOME} && \
   make && \
@@ -156,59 +152,55 @@ RUN cd /tmp && \
   make install-plugin && \
   rm -rf /tmp/nrpe /tmp/nrpe.zip
 
-RUN mkdir -p /usr/share/snmp/mibs \
-    && ln -s /usr/share/snmp/mibs ${NAGIOS_HOME}/libexec/mibs \
-    && download-mibs \
-    && echo "mibs +ALL" > /etc/snmp/snmp.conf
+RUN mkdir -p /usr/share/snmp/mibs && \
+  ln -s /usr/share/snmp/mibs ${NAGIOS_HOME}/libexec/mibs && \
+  download-mibs && \
+  echo "mibs +ALL" > /etc/snmp/snmp.conf
 
-RUN virtualenv /opt/graphite \
-    && . /opt/graphite/bin/activate \
-    && pip install --no-cache-dir \
-        cffi \
-        scandir \
-    && pip install --no-cache-dir \
-        --no-binary=:all: \
-        https://github.com/graphite-project/whisper/tarball/master \
-        https://github.com/graphite-project/carbon/tarball/master \
-        https://github.com/graphite-project/graphite-web/tarball/master \
-    && deactivate
+RUN virtualenv --python=python3.5 /opt/graphite && \
+  . /opt/graphite/bin/activate && \
+  pip install --no-cache-dir cffi scandir && \
+  pip install --no-cache-dir --no-binary=:all: \
+    https://github.com/graphite-project/whisper/tarball/master \
+    https://github.com/graphite-project/carbon/tarball/master \
+    https://github.com/graphite-project/graphite-web/tarball/master && \
+  deactivate
 
-RUN cd /opt/graphite/conf/ \
-    && cp carbon.conf.example carbon.conf \
-    && cp storage-schemas.conf.example storage-schemas.conf \
-    && cp graphite.wsgi.example graphite.wsgi \
-    && sed -i 's/import sys/import sys, site/' graphite.wsgi \
-    && sed -i '/import sys, site/a\site.addsitedir("/opt/graphite/lib/python2.7/site-packages")' graphite.wsgi \
-    && cd /opt/graphite/webapp/graphite/ \
-    && cp local_settings.py.example local_settings.py \
-    && . /opt/graphite/bin/activate \
-    && export PYTHONPATH="/opt/graphite/lib/:/opt/graphite/webapp/" \
-    && django-admin.py migrate --settings=graphite.settings --run-syncdb \
-    && unset PYTHONPATH \
-    && deactivate \
-    && chown -R www-data:www-data /opt/graphite/storage \
-    && cd /etc/apache2/sites-available/ \
-    && cp /opt/graphite/examples/example-graphite-vhost.conf graphite.conf \
-    && sed -i 's/80/8080/' graphite.conf \
-    && sed -i 's;WSGISocketPrefix run/wsgi;WSGISocketPrefix /var/run/apache2/wsgi;' graphite.conf \
-    && a2ensite graphite \
-    && echo "Listen 8080" >> /etc/apache2/ports.conf
+RUN cd /opt/graphite/conf/ && \
+  cp carbon.conf.example carbon.conf && \
+  cp storage-schemas.conf.example storage-schemas.conf && \
+  cp graphite.wsgi.example graphite.wsgi && \
+  sed -i 's/import sys/import sys, site/' graphite.wsgi && \
+  sed -i '/import sys, site/a\site.addsitedir("/opt/graphite/lib/python2.7/site-packages")' graphite.wsgi && \
+  cd /opt/graphite/webapp/graphite/ && \
+  cp local_settings.py.example local_settings.py && \
+  . /opt/graphite/bin/activate && \
+  export PYTHONPATH="/opt/graphite/lib/:/opt/graphite/webapp/" && \
+  django-admin.py migrate --settings=graphite.settings --run-syncdb && \
+  unset PYTHONPATH && \
+  deactivate && \
+  chown -R www-data:www-data /opt/graphite/storage && \
+  cd /etc/apache2/sites-available/ && \
+  cp /opt/graphite/examples/example-graphite-vhost.conf graphite.conf && \
+  sed -i 's/80/8080/' graphite.conf && \
+  sed -i 's;WSGISocketPrefix run/wsgi;WSGISocketPrefix /var/run/apache2/wsgi;' graphite.conf && \
+  a2ensite graphite && \
+  echo "Listen 8080" >> /etc/apache2/ports.conf
 
-RUN mkdir -p /var/spool/nagios/graphios \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /var/spool/nagios \
-    && pip install --no-cache-dir \
-        graphios \
-    && sed -i 's/^enable_carbon.*/enable_carbon = True/' /etc/graphios/graphios.cfg \
-    && sed -i 's/^debug.*/debug = False/' /etc/graphios/graphios.cfg \
-    && sed -i 's/^debug.*/debug = False/' /usr/local/bin/graphios.py \
-    && sed -i 's;^config_file.*;config_file = "/etc/graphios/graphios.cfg";' /usr/local/bin/graphios.py \
-    && cd "${NAGIOS_HOME}/etc/" \
-    && pynag config --remove cfg_dir --old_value="${NAGIOS_HOME}/etc/objects" \
-    && pynag config --set service_perfdata_file_processing_command=graphite_perf_service \
-    && pynag config --set host_perfdata_file_processing_command=graphite_perf_host \
-    && pynag update --force SET _graphitepostfix=ping WHERE host_name=localhost AND service_description='PING' \
-    && pynag update --force SET _graphitepostfix=loadaverage WHERE host_name=localhost AND service_description='Current Load' \
-    && echo 'define command {\n\
+RUN mkdir -p /var/spool/nagios/graphios && \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /var/spool/nagios && \
+  pip install --no-cache-dir graphios && \
+  sed -i 's/^enable_carbon.*/enable_carbon = True/' /etc/graphios/graphios.cfg && \
+  sed -i 's/^debug.*/debug = False/' /etc/graphios/graphios.cfg && \
+  sed -i 's/^debug.*/debug = False/' /usr/local/bin/graphios.py && \
+  sed -i 's;^config_file.*;config_file = "/etc/graphios/graphios.cfg";' /usr/local/bin/graphios.py && \
+  cd "${NAGIOS_HOME}/etc/" && \
+  pynag config --remove cfg_dir --old_value="${NAGIOS_HOME}/etc/objects" && \
+  pynag config --set service_perfdata_file_processing_command=graphite_perf_service && \
+  pynag config --set host_perfdata_file_processing_command=graphite_perf_host && \
+  pynag update --force SET _graphitepostfix=ping WHERE host_name=localhost AND service_description='PING' && \
+  pynag update --force SET _graphitepostfix=loadaverage WHERE host_name=localhost AND service_description='Current Load' && \
+  echo 'define command {\n\
     command_name            graphite_perf_host\n\
     command_line            /bin/mv /var/spool/nagios/graphios/host-perfdata /var/spool/nagios/graphios/host-perfdata.$TIMET$\n\
 }\n\
@@ -218,68 +210,71 @@ define command {\n\
     command_line            /bin/mv /var/spool/nagios/graphios/service-perfdata /var/spool/nagios/graphios/service-perfdata.$TIMET$\n\
 }\n\n' >> objects/commands.cfg
 
-RUN echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" >> /etc/apt/sources.list \
-    && curl https://packagecloud.io/gpg.key | sudo apt-key add - \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        adduser \
-        libfontconfig \
-        grafana \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" >> /etc/apt/sources.list && \
+  curl https://packagecloud.io/gpg.key | sudo apt-key add - && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends adduser libfontconfig grafana && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
-RUN cd /tmp \
-    && git clone https://github.com/NagiosEnterprises/ndoutils.git \
-    && cd ndoutils \
-    && git checkout ndoutils-${NDOUTILS_VERSION} \
-    && ./configure \
-        --prefix="${NAGIOS_HOME}" \
-        --enable-mysql \
-    && make all \
-    && make install \
-    && cp config/ndo2db.cfg-sample ${NAGIOS_HOME}/etc/ndo2db.cfg-sample \
-    && cp db/mysql.sql ${NAGIOS_HOME}/share/mysql-createdb.sql \
-    && sed -i 's/ENGINE=MyISAM/ENGINE=MyISAM DEFAULT CHARSET=utf8/g' ${NAGIOS_HOME}/share/mysql-createdb.sql \
-    && cp config/ndomod.cfg-sample "${NAGIOS_HOME}"/etc/ndomod.cfg \
-    && chmod 666 ${NAGIOS_HOME}/etc/ndomod.cfg \
-    && rm -rf /tmp/ndoutils
+# https://github.com/NagiosEnterprises/ndoutils/archive/ndoutils-${NDOUTILS_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/ndoutils/-/archive/ndoutils-${NDOUTILS_VERSION}/ndoutils-ndoutils-${NDOUTILS_VERSION}.zip
 
-RUN cd /tmp \
-    && git clone https://github.com/vishnubob/wait-for-it.git \
-    && chmod +x /tmp/wait-for-it/wait-for-it.sh \
-    && cp /tmp/wait-for-it/wait-for-it.sh /usr/bin/wait-for-it \
-    && rm -rf /tmp/wait-for-it
+RUN cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/ndoutils/-/archive/ndoutils-${NDOUTILS_VERSION}/ndoutils-ndoutils-${NDOUTILS_VERSION}.zip -o ndoutils.zip && \
+  unzip ndoutils.zip && \
+  mv ndoutils-* ndoutils && \
+  cd ndoutils && \
+  ./configure --prefix="${NAGIOS_HOME}" --enable-mysql && \
+  make all && \
+  make install && \
+  cp config/ndo2db.cfg-sample ${NAGIOS_HOME}/etc/ndo2db.cfg-sample && \
+  cp db/mysql.sql ${NAGIOS_HOME}/share/mysql-createdb.sql && \
+  sed -i 's/ENGINE=MyISAM/ENGINE=MyISAM DEFAULT CHARSET=utf8/g' ${NAGIOS_HOME}/share/mysql-createdb.sql && \
+  cp config/ndomod.cfg-sample "${NAGIOS_HOME}"/etc/ndomod.cfg && \
+  chmod 666 ${NAGIOS_HOME}/etc/ndomod.cfg && \
+  rm -rf /tmp/ndoutils /tmp/ndoutils.zip
 
-RUN cd /usr/local/ \
-    && curl -LSf https://github.com/NagiosEnterprises/nrdp/tarball/master -o nrdp.tar.gz \
-    && tar zxf nrdp.tar.gz \
-    && rm -f nrdp.tar.gz \
-    && mv NagiosEnterprises-nrdp* nrdp \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} nrdp \
-    && mv nrdp/server/config.inc.php nrdp/server/config.inc.php.example \
-    && echo "<Directory \"/usr/local/nrdp\">\n\
+RUN curl -L https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh -o /usr/bin/wait-for-it && \
+  chmod +x /usr/bin/wait-for-it
+
+# https://github.com/NagiosEnterprises/nrdp/archive/nrdp-${NRDP_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip
+
+RUN cd /usr/local/ && \
+  curl -L http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip -o nrdp.zip && \
+  unzip nrdp.zip && \
+  rm -f nrdp.zip && \
+  mv nrdp-* nrdp && \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} nrdp && \
+  mv nrdp/server/config.inc.php nrdp/server/config.inc.php.example && \
+  echo "<Directory \"/usr/local/nrdp\">\n\
     Options None\n\
     AllowOverride None\n\
     Require all granted\n\
 </Directory>\n\
-Alias /nrdp \"/usr/local/nrdp/server\"\n" > /etc/apache2/sites-available/nrdp.conf \
-    && a2ensite nrdp
+Alias /nrdp \"/usr/local/nrdp/server\"\n" > /etc/apache2/sites-available/nrdp.conf && \
+  a2ensite nrdp
 
-RUN cd /tmp \
-    && git clone https://github.com/opinkerfi/okconfig.git \
-    && cd okconfig \
-    && pip install --no-cache-dir . \
-    && cp -f etc/okconfig.conf /etc/okconfig.conf \
-    && mkdir -p ${NAGIOS_HOME}/etc/okconfig/ /data/example \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME} /data/example \
-    && sed -i "s,/etc/nagios/,${NAGIOS_HOME}/etc/," /etc/okconfig.conf \
-    && sed -i "s,${NAGIOS_HOME}/etc/okconfig/examples,/data/example," /etc/okconfig.conf \
-    && cd /usr/share/okconfig \
-    && find ./templates/ -name '*cfg*' -type f -exec \
-        sed -i 's/normal_check_interval/check_interval/' {} \; \
-    && okconfig init \
-    && okconfig verify \
-    && rm -rf /tmp/okconfig
+# https://github.com/opinkerfi/okconfig/archive/okconfig-${OKCONFIG_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/okconfig/-/archive/okconfig-${OKCONFIG_VERSION}/okconfig-okconfig-${OKCONFIG_VERSION}.zip
+
+RUN cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/okconfig/-/archive/okconfig-${OKCONFIG_VERSION}/okconfig-okconfig-${OKCONFIG_VERSION}.zip -o okconfig.zip && \
+  unzip okconfig.zip && \
+  mv okconfig-* okconfig && \
+  cd okconfig && \
+  pip install --no-cache-dir . && \
+  cp -f etc/okconfig.conf /etc/okconfig.conf && \
+  mkdir -p ${NAGIOS_HOME}/etc/okconfig/ /data/example && \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} ${NAGIOS_HOME} /data/example && \
+  sed -i "s,/etc/nagios/,${NAGIOS_HOME}/etc/," /etc/okconfig.conf && \
+  sed -i "s,${NAGIOS_HOME}/etc/okconfig/examples,/data/example," /etc/okconfig.conf && \
+  cd /usr/share/okconfig && \
+  find ./templates/ -name '*cfg*' -type f -exec sed -i 's/normal_check_interval/check_interval/' {} \; && \
+  okconfig init && \
+  okconfig verify && \
+  rm -rf /tmp/okconfig /tmp/okconfig.zip
 
 ADD okconfig/install_ncpa.bat /usr/share/okconfig/client/windows/install.bat.example
 ADD okconfig/install_nsclient.sh /usr/share/okconfig/client/windows/install_nsclient.sh
