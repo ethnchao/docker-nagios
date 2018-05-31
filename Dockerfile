@@ -60,7 +60,7 @@ RUN pip install --no-cache-dir --no-binary=:all: https://github.com/pynag/pynag/
 # http://192.168.120.155:8000/ethnchao/nagioscore/-/archive/nagios-${NAGIOS_VERSION}/nagioscore-nagios-${NAGIOS_VERSION}.zip
 
 RUN cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/nagioscore/-/archive/nagios-${NAGIOS_VERSION}/nagioscore-nagios-${NAGIOS_VERSION}.zip -o nagioscore.zip && \
+  curl -L https://github.com/NagiosEnterprises/nagioscore/archive/nagios-${NAGIOS_VERSION}.zip -o nagioscore.zip && \
   unzip nagioscore.zip && \
   mv nagioscore-* nagioscore && \
   cd nagioscore && \
@@ -105,7 +105,7 @@ define command{\n\
 # http://192.168.120.155:8000/ethnchao/nagios-plugins/-/archive/release-${NAGIOS_PLUGINS_VERSION}/nagios-plugins-release-${NAGIOS_PLUGINS_VERSION}.zip
 
 RUN cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/nagios-plugins/-/archive/release-${NAGIOS_PLUGINS_VERSION}/nagios-plugins-release-${NAGIOS_PLUGINS_VERSION}.zip -o nagios-plugins.zip && \
+  curl -L https://github.com/nagios-plugins/nagios-plugins/archive/release-${NAGIOS_PLUGINS_VERSION}.zip -o nagios-plugins.zip && \
   unzip nagios-plugins.zip && \
   mv nagios-plugins-* nagios-plugins && \
   cd nagios-plugins && \
@@ -120,7 +120,7 @@ RUN cd /tmp && \
 # http://192.168.120.155:8000/ethnchao/nrpe/-/archive/nrpe-${NRPE_VERSION}/nrpe-nrpe-${NRPE_VERSION}.zip
 
 RUN cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/nrpe/-/archive/nrpe-${NRPE_VERSION}/nrpe-nrpe-${NRPE_VERSION}.zip -o nrpe.zip && \
+  curl -L https://github.com/NagiosEnterprises/nrpe/archive/nrpe-${NRPE_VERSION}.zip -o nrpe.zip && \
   unzip nrpe.zip && \
   mv nrpe-* nrpe && \
   cd nrpe && \
@@ -201,7 +201,7 @@ RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ jessie main" >> 
 # http://192.168.120.155:8000/ethnchao/ndoutils/-/archive/ndoutils-${NDOUTILS_VERSION}/ndoutils-ndoutils-${NDOUTILS_VERSION}.zip
 
 RUN cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/ndoutils/-/archive/ndoutils-${NDOUTILS_VERSION}/ndoutils-ndoutils-${NDOUTILS_VERSION}.zip -o ndoutils.zip && \
+  curl -L https://github.com/NagiosEnterprises/ndoutils/archive/ndoutils-${NDOUTILS_VERSION}.zip -o ndoutils.zip && \
   unzip ndoutils.zip && \
   mv ndoutils-* ndoutils && \
   cd ndoutils && \
@@ -226,7 +226,7 @@ RUN cd /tmp/ && \
 # http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip
 
 RUN cd /usr/local/ && \
-  curl -L http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip -o nrdp.zip && \
+  curl -L https://github.com/NagiosEnterprises/nrdp/archive/nrdp-${NRDP_VERSION}.zip -o nrdp.zip && \
   unzip nrdp.zip && \
   rm -f nrdp.zip && \
   mv nrdp-* nrdp && \
@@ -244,7 +244,7 @@ Alias /nrdp \"/usr/local/nrdp/server\"\n" > /etc/apache2/sites-available/nrdp.co
 # http://192.168.120.155:8000/ethnchao/okconfig/-/archive/okconfig-${OKCONFIG_VERSION}/okconfig-okconfig-${OKCONFIG_VERSION}.zip
 
 RUN cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/okconfig/-/archive/okconfig-${OKCONFIG_VERSION}/okconfig-okconfig-${OKCONFIG_VERSION}.zip -o okconfig.zip && \
+  curl -L https://github.com/opinkerfi/okconfig/archive/okconfig-${OKCONFIG_VERSION}.zip -o okconfig.zip && \
   unzip okconfig.zip && \
   mv okconfig-* okconfig && \
   cd okconfig && \
@@ -289,7 +289,7 @@ RUN cd /tmp && \
 RUN virtualenv /opt/adagios && \
   . /opt/adagios/bin/activate && \
   cd /tmp && \
-  curl -L http://192.168.120.155:8000/ethnchao/adagios/-/archive/adagios-${ADAGIOS_VERSION}/adagios-adagios-${ADAGIOS_VERSION}.zip -o adagios.zip && \
+  curl -L https://github.com/opinkerfi/adagios/archive/adagios-${ADAGIOS_VERSION}.zip -o adagios.zip && \
   unzip adagios.zip && \
   mv adagios-* adagios && \
   cd adagios && \
