@@ -20,7 +20,7 @@ ENV NRDP_VERSION            1.5.2
 ENV OKCONFIG_VERSION        1.3.2-1
 ENV NCPA_VERSION            2.1.3
 ENV MK_LIVESTATUS_VERSION   1.2.8p20
-ENV ADAGIOS_VERSION         1.6.3-1
+ENV ADAGIOS_VERSION         1.6.3-2
 
 # Remove below if you want use default apt mirror sites
 ADD config/apt/sources.list /etc/apt/sources.list
@@ -28,46 +28,19 @@ ADD config/apt/sources.list /etc/apt/sources.list
 ADD config/pip/pip.conf /root/.config/pip/pip.conf
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-    git \
-    python-pip \
-    python-dev \
-    python3-dev \
-    runit \
-    parallel \
-    sudo \
-    apache2 \
-    apache2-utils \
-    autoconf \
-    bc \
-    build-essential \
+    automake apache2 apache2-utils autoconf \
+    bc build-essential bsd-mailx \
     dc \
-    gawk \
-    gettext \
-    gperf \
-    libapache2-mod-php \
-    libgd2-xpm-dev \
-    libmcrypt-dev \
-    libssl-dev \
-    unzip \
-    bsd-mailx \
-    m4 \
-    automake \
-    iputils-ping \
     fping \
-    postfix \
-    libnet-snmp-perl \
-    smbclient \
-    snmp \
-    snmpd \
-    snmp-mibs-downloader \
+    gawk gettext gperf git \
+    iputils-ping \
+    libapache2-mod-php libgd2-xpm-dev libmcrypt-dev libssl-dev libcairo2-dev libffi-dev libapache2-mod-wsgi libmysql++-dev libmysqlclient-dev libnet-snmp-perl \
+    m4 mysql-client \
     netcat \
-    libcairo2-dev \
-    libffi-dev \
-    libapache2-mod-wsgi \
-    mysql-client \
-    libmysql++-dev \
-    libmysqlclient-dev \
-    php7.0-xml && \
+    python-pip python-dev python3-dev parallel php7.0-xml postfix \
+    runit \
+    smbclient snmp snmpd snmp-mibs-downloader sudo \
+    unzip && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   pip install --upgrade --no-cache-dir pip distribute virtualenv
@@ -288,57 +261,55 @@ RUN cd /usr/share/okconfig/client/ && \
   dpkg -i /tmp/winexe.deb && \
   rm -f /tmp/winexe.deb
 
-RUN cd /tmp \
-    && curl http://mathias-kettner.com/download/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz \
-        -o mk-livestatus.tar.gz \
-    && tar zxf mk-livestatus.tar.gz \
-    && rm -f mk-livestatus.tar.gz \
-    && mv mk-livestatus* mk-livestatus \
-    && cd mk-livestatus \
-    && ./configure --with-nagios4 \
-    && make \
-    && make install \
-    && rm -rf /tmp/mk-livestatus
+RUN cd /tmp && \
+  curl http://mathias-kettner.com/download/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz -o mk-livestatus.tar.gz && \
+  tar zxf mk-livestatus.tar.gz && \
+  rm -f mk-livestatus.tar.gz && \
+  mv mk-livestatus* mk-livestatus && \
+  cd mk-livestatus && \
+  ./configure --with-nagios4 && \
+  make && \
+  make install && \
+  rm -rf /tmp/mk-livestatus
 
-RUN virtualenv /opt/adagios \
-    && . /opt/adagios/bin/activate \
-    && cd /tmp \
-    && git clone https://github.com/opinkerfi/adagios.git \
-    && cd adagios \
-    && git checkout tags/adagios-${ADAGIOS_VERSION} \
-    && pip install \
-        --no-cache-dir \
-        --no-binary=:all: \
-        -r requirements.txt \
-        . \
-        https://github.com/pynag/pynag/tarball/master \
-    && deactivate \
-    && cp -r adagios/etc/adagios/ /etc/ \
-    && rm -rf /tmp/adagios
+# https://github.com/opinkerfi/adagios/archive/adagios-${ADAGIOS_VERSION}.zip
+# http://192.168.120.155:8000/ethnchao/adagios/-/archive/adagios-${ADAGIOS_VERSION}/adagios-adagios-${ADAGIOS_VERSION}.zip
 
-RUN cd /etc/adagios/ \
-    && sed -i 's,^enable_pnp4nagios.*,enable_pnp4nagios=False,' adagios.conf \
-    && sed -i "s,^nagios_config.*,nagios_config=\"${NAGIOS_HOME}/etc/nagios.cfg\"," adagios.conf \
-    && sed -i "s,^nagios_binary.*,nagios_binary=\"${NAGIOS_HOME}/bin/nagios\"," adagios.conf \
-    && sed -i "s,^livestatus_path.*,livestatus_path=\"${NAGIOS_HOME}/var/livestatus\"," adagios.conf \
-    && sed -i "s,^destination_directory.*,destination_directory=\"${NAGIOS_HOME}/etc/adagios/\"," adagios.conf \
-    && mkdir -p ${NAGIOS_HOME}/etc/adagios/ /var/lib/adagios/ \
-    && cd ${NAGIOS_HOME}/etc \
-    && git init \
-    && git config user.name "nagios" \
-    && git config user.email "nagios@localhost.com" \
-    && git add * \
-    && git commit -m "Initial commit" \
-    && pynag config --set cfg_dir="${NAGIOS_HOME}/etc/adagios" \
-    && pynag config --append "broker_module=/usr/local/lib/mk-livestatus/livestatus.o ${NAGIOS_HOME}/var/livestatus" \
-    && chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/ /var/lib/adagios/ \
-    && cd /opt/adagios/local/lib/python2.7/site-packages/adagios/ \
-    && cp wsgi.py wsgi.py.origin \
-    && sed -i 's/import os/import os, site/' wsgi.py \
-    && sed -i '/import os, site/a\site.addsitedir("/opt/adagios/lib/python2.7/site-packages")' wsgi.py \
-    && echo "${NAGIOS_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/adagios \
-    && chmod 0440 /etc/sudoers.d/adagios \
-    && echo "WSGISocketPrefix /var/run/apache2/wsgi \n\
+RUN virtualenv /opt/adagios && \
+  . /opt/adagios/bin/activate && \
+  cd /tmp && \
+  curl -L http://192.168.120.155:8000/ethnchao/adagios/-/archive/adagios-${ADAGIOS_VERSION}/adagios-adagios-${ADAGIOS_VERSION}.zip -o adagios.zip && \
+  unzip adagios.zip && \
+  mv adagios-* adagios && \
+  cd adagios && \
+  pip install --no-cache-dir --no-binary=:all: -r requirements.txt . https://github.com/pynag/pynag/tarball/master && \
+  deactivate && \
+  cp -r adagios/etc/adagios/ /etc/ && \
+  rm -rf /tmp/adagios /tmp/adagios.zip
+
+RUN cd /etc/adagios/ && \
+  sed -i 's,^enable_pnp4nagios.*,enable_pnp4nagios=False,' adagios.conf && \
+  sed -i "s,^nagios_config.*,nagios_config=\"${NAGIOS_HOME}/etc/nagios.cfg\"," adagios.conf && \
+  sed -i "s,^nagios_binary.*,nagios_binary=\"${NAGIOS_HOME}/bin/nagios\"," adagios.conf && \
+  sed -i "s,^livestatus_path.*,livestatus_path=\"${NAGIOS_HOME}/var/livestatus\"," adagios.conf && \
+  sed -i "s,^destination_directory.*,destination_directory=\"${NAGIOS_HOME}/etc/adagios/\"," adagios.conf && \
+  mkdir -p ${NAGIOS_HOME}/etc/adagios/ /var/lib/adagios/ && \
+  cd ${NAGIOS_HOME}/etc && \
+  git init && \
+  git config user.name "nagios" && \
+  git config user.email "nagios@localhost.com" && \
+  git add * && \
+  git commit -m "Initial commit" && \
+  pynag config --set cfg_dir="${NAGIOS_HOME}/etc/adagios" && \
+  pynag config --append "broker_module=/usr/local/lib/mk-livestatus/livestatus.o ${NAGIOS_HOME}/var/livestatus" && \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/ /var/lib/adagios/ && \
+  cd /opt/adagios/local/lib/python2.7/site-packages/adagios/ && \
+  cp wsgi.py wsgi.py.origin && \
+  sed -i 's/import os/import os, site/' wsgi.py && \
+  sed -i '/import os, site/a\site.addsitedir("/opt/adagios/lib/python2.7/site-packages")' wsgi.py && \
+  echo "${NAGIOS_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/adagios && \
+  chmod 0440 /etc/sudoers.d/adagios && \
+  echo "WSGISocketPrefix /var/run/apache2/wsgi \n\
 WSGIDaemonProcess adagios user=${NAGIOS_USER} group=${NAGIOS_GROUP} processes=1 threads=25 \n\
 WSGIScriptAlias /adagios /opt/adagios/lib/python2.7/site-packages/adagios/wsgi.py \n\
 Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
@@ -349,8 +320,8 @@ Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
     AuthUserFile ${NAGIOS_HOME}/etc/htpasswd.users \n\
     Require valid-user \n\
     RedirectMatch ^/adagios$ /adagios/ \n\
-</Location> \n" > /etc/apache2/sites-available/adagios.conf \
-    && a2ensite adagios
+</Location> \n" > /etc/apache2/sites-available/adagios.conf && \
+  a2ensite adagios
 
 ADD run.sh /run.sh
 ADD config/sv/apache/run /etc/sv/apache/run
@@ -358,12 +329,11 @@ ADD config/sv/carbon/run /etc/sv/carbon/run
 ADD config/sv/postfix/run /etc/sv/postfix/run
 ADD config/sv/graphios/run /etc/sv/graphios/run
 
-RUN rm -rf /etc/sv/getty-5 \
-    && chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run \
-        /etc/sv/postfix/run /etc/sv/carbon/run \
-    && ln -s /etc/sv/* /etc/service \
-    && cp /etc/services /var/spool/postfix/etc/ \
-    && ln -sf "/usr/share/zoneinfo/Asia/Shanghai" /etc/localtime
+RUN rm -rf /etc/sv/getty-5 && \
+  chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run /etc/sv/postfix/run /etc/sv/carbon/run && \
+  ln -s /etc/sv/* /etc/service && \
+  cp /etc/services /var/spool/postfix/etc/ && \
+  ln -sf "/usr/share/zoneinfo/Asia/Shanghai" /etc/localtime
 
 ENV APACHE_LOCK_DIR /var/run
 ENV APACHE_LOG_DIR /var/log/apache2
