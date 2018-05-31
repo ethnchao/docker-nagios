@@ -2,13 +2,12 @@ version: '2'
 services:
   nagios:
     image: ethnchao/nagios
+    container_name: nagios
     command: --enable-ndo --create-db --server-url http://192.168.101.100:4000
     ports:
       - 4000:80
       - 4001:3000
     restart: always
-    networks:
-      - nagios-network
     logging:
       options:
         max-size: "10m"
@@ -22,11 +21,10 @@ services:
 
   nagios_mysql:
     image: mysql:5.6
+    container_name: mysql
     ports:
       - 3306:3306
     restart: always
-    networks:
-      - nagios-network
     logging:
       options:
         max-size: "10m"
@@ -37,7 +35,8 @@ services:
       - MYSQL_ADDRESS=nagios_mysql
       - MYSQL_DATABASE=nagios
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    volumes:
+      - nagios_db_data:/var/lib/mysql
 
-networks:
-  nagios-network:
-    driver: bridge
+volumes:
+  nagios_db_data:
