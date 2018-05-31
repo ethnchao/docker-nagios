@@ -11,17 +11,17 @@ Adagios 用于在网页端处理各类配置和总览状态查看，Grafana 用�
 
 * [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
 * [`Nagios Core 4.3.4`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - 社区版本
-* [`Nagios Plugins 2.2.0`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
+* [`Nagios Plugins 2.2.1`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
 * [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) 发送Nagios spool数据给Graphite
-* [`Graphite master`](https://github.com/graphite-project/graphite-web/) Grafana 的数据源
-* [`Grafana 4.2.0`](https://grafana.com/) 用于Graphite，InfluxDB和Prometheus等监控的度量分析和仪表盘的工具，图形界面很赞
+* [`Graphite 1.1.3`](https://github.com/graphite-project/graphite-web/) Grafana 的数据源
+* [`Grafana 5.1.3`](https://grafana.com/) 用于Graphite，InfluxDB和Prometheus等监控的度量分析和仪表盘的工具，图形界面很赞
 * [`NDOUtils 2.1.3`](https://github.com/NagiosEnterprises/ndoutils) 允许你把Nagios的监控数据存储在MySQL 数据库
-* [`PyNag master`](https://github.com/pynag/pynag/) 一个命令行工具，用于管理Nagios的配置，并提供了框架用于编写插件
-* [`Okconfig master`](https://github.com/opinkerfi/okconfig) 提供了模板化的Nagios配置方式，Adagios可使用okconfig来方便快速的配置Nagios
+* [`PyNag 0.9.1-1`](https://github.com/pynag/pynag/) 一个命令行工具，用于管理Nagios的配置，并提供了框架用于编写插件
+* [`Okconfig 1.3.2-1`](https://github.com/opinkerfi/okconfig) 提供了模板化的Nagios配置方式，Adagios可使用okconfig来方便快速的配置Nagios
 * [`MK-livestatus 1.2.8p20`](http://mathias-kettner.com/) MK-livestatus可以获取Nagios状态信息，作为broker module 加载到 Nagios配置中，, Adagios使用mk-livestatus来获取状态信息
-* [`Adagios 1.6.3-1`](https://github.com/opinkerfi/adagios.git) 基于Web 的Nagios配置界面，简单、直观的设计，覆盖了Nagios杂乱无章的UI界面。Adagios在UI上 比Check_MK更加轻量，基于mod_wsgi（所以无法与Check_MK一起使用，Check_MK基于mod_python，已经过时并且与mod_wsgi冲突）
-* [`NRDP master`](https://github.com/NagiosEnterprises/nrdp) 用于Nagios的一个可扩展的数据传输方式与处理单元。使用标准端口协议（HTTP(S) 和 XML 用于api响应）并用于替代NSCA。与NCPA一同使用，天哪，这些该死的名字（nrpe,ncpa,nrds,nrdp,nsti...）。
-* [`NCPA 2.0.3`](https://github.com/NagiosEnterprises/ncpa) Nagios跨平台的Agent，适用于所有主流操作系统，NCPA自带Web 界面，我们同时将使用NCPA用于被动监控。
+* [`Adagios 1.6.3-2`](https://github.com/opinkerfi/adagios.git) 基于Web 的Nagios配置界面，简单、直观的设计，覆盖了Nagios杂乱无章的UI界面。Adagios在UI上 比Check_MK更加轻量，基于mod_wsgi（所以无法与Check_MK一起使用，Check_MK基于mod_python，已经过时并且与mod_wsgi冲突）
+* [`NRDP 1.5.2`](https://github.com/NagiosEnterprises/nrdp) 用于Nagios的一个可扩展的数据传输方式与处理单元。使用标准端口协议（HTTP(S) 和 XML 用于api响应）并用于替代NSCA。与NCPA一同使用，天哪，这些该死的名字（nrpe,ncpa,nrds,nrdp,nsti...）。
+* [`NCPA 2.1.3`](https://github.com/NagiosEnterprises/ncpa) Nagios跨平台的Agent，适用于所有主流操作系统，NCPA自带Web 界面，我们同时将使用NCPA用于被动监控。
 
 从 DockerHub 获取 nagios
 

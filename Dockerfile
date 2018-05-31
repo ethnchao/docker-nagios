@@ -12,15 +12,19 @@ ENV MYSQL_PASSWORD          nagios
 ENV MYSQL_ADDRESS           nagios_mysql
 ENV MYSQL_DATABASE          nagios
 
+ENV ADAGIOS_VERSION         1.6.3-2
+ENV GRAPHIOS_VERSION        2.0.3
+ENV GRAPHITE_VERSION        1.1.3
+ENV GRAFANA_VERSION         5.1.3
+ENV MK_LIVESTATUS_VERSION   1.2.8p20
 ENV NAGIOS_VERSION          4.3.4
 ENV NAGIOS_PLUGINS_VERSION  2.2.1
-ENV NRPE_VERSION            3.2.1
+ENV NCPA_VERSION            2.1.3
 ENV NDOUTILS_VERSION        2.1.3
 ENV NRDP_VERSION            1.5.2
+ENV NRPE_VERSION            3.2.1
 ENV OKCONFIG_VERSION        1.3.2-1
-ENV NCPA_VERSION            2.1.3
-ENV MK_LIVESTATUS_VERSION   1.2.8p20
-ENV ADAGIOS_VERSION         1.6.3-2
+ENV PYNAG_VERSION           0.9.1-1
 
 # Remove below if you want use default apt mirror sites
 ADD config/apt/sources.list /etc/apt/sources.list
@@ -134,9 +138,9 @@ RUN virtualenv --python=python3.5 /opt/graphite && \
   . /opt/graphite/bin/activate && \
   pip install --no-cache-dir cffi scandir && \
   pip install --no-cache-dir --no-binary=:all: \
-    https://github.com/graphite-project/whisper/tarball/master \
-    https://github.com/graphite-project/carbon/tarball/master \
-    https://github.com/graphite-project/graphite-web/tarball/master && \
+    https://github.com/graphite-project/whisper/archive/${GRAPHITE_VERSION}.zip \
+    https://github.com/graphite-project/carbon/archive/${GRAPHITE_VERSION}.zip \
+    https://github.com/graphite-project/graphite-web/archive/${GRAPHITE_VERSION}.zip && \
   deactivate
 
 RUN cd /opt/graphite/conf/ && \
@@ -162,7 +166,7 @@ RUN cd /opt/graphite/conf/ && \
 
 RUN mkdir -p /var/spool/nagios/graphios && \
   chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /var/spool/nagios && \
-  pip install --no-cache-dir graphios && \
+  pip install --no-cache-dir graphios==${GRAPHIOS_VERSION} && \
   sed -i 's/^enable_carbon.*/enable_carbon = True/' /etc/graphios/graphios.cfg && \
   sed -i 's/^debug.*/debug = False/' /etc/graphios/graphios.cfg && \
   sed -i 's/^debug.*/debug = False/' /usr/local/bin/graphios.py && \
@@ -186,7 +190,7 @@ define command {\n\
 RUN echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" >> /etc/apt/sources.list && \
   curl https://packagecloud.io/gpg.key | sudo apt-key add - && \
   apt-get update && \
-  apt-get install -y --no-install-recommends adduser libfontconfig grafana && \
+  apt-get install -y --no-install-recommends adduser libfontconfig grafana=${GRAFANA_VERSION} && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
@@ -208,8 +212,12 @@ RUN cd /tmp && \
   chmod 666 ${NAGIOS_HOME}/etc/ndomod.cfg && \
   rm -rf /tmp/ndoutils /tmp/ndoutils.zip
 
-RUN curl -L https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh -o /usr/bin/wait-for-it && \
-  chmod +x /usr/bin/wait-for-it
+RUN cd /tmp/ && \
+  curl -L https://github.com/vishnubob/wait-for-it/archive/master.zip -o wait-for-it.zip && \
+  unzip wait-for-it.zip && \
+  mv wait-for-it-master/wait-for-it.sh /usr/bin/wait-for-it && \
+  chmod +x /usr/bin/wait-for-it && \
+  rm -rf /tmp/wait-for-it-master /tmp/wait-for-it.zip
 
 # https://github.com/NagiosEnterprises/nrdp/archive/nrdp-${NRDP_VERSION}.zip
 # http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip
@@ -282,7 +290,7 @@ RUN virtualenv /opt/adagios && \
   unzip adagios.zip && \
   mv adagios-* adagios && \
   cd adagios && \
-  pip install --no-cache-dir --no-binary=:all: -r requirements.txt . https://github.com/pynag/pynag/tarball/master && \
+  pip install --no-cache-dir --no-binary=:all: -r requirements.txt . https://github.com/pynag/pynag/archive/pynag-${PYNAG_VERSION}.zip && \
   deactivate && \
   cp -r adagios/etc/adagios/ /etc/ && \
   rm -rf /tmp/adagios /tmp/adagios.zip

@@ -10,17 +10,17 @@ As the docker-image contains a large number of software, the following describes
 
 * [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
 * [`Nagios Core 4.3.4`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
-* [`Nagios Plugins 2.2.0`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
+* [`Nagios Plugins 2.2.1`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
 * [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) Send Nagios spool data to graphite
-* [`Graphite master`](https://github.com/graphite-project/graphite-web/) Grafana's datasource
-* [`Grafana 4.2.0`](https://grafana.com/) The tool for beautiful monitoring and metric analytics & dashboards for Graphite, InfluxDB & Prometheus & More
+* [`Graphite 1.1.3`](https://github.com/graphite-project/graphite-web/) Grafana's datasource
+* [`Grafana 5.1.3`](https://grafana.com/) The tool for beautiful monitoring and metric analytics & dashboards for Graphite, InfluxDB & Prometheus & More
 * [`NDOUtils 2.1.3`](https://github.com/NagiosEnterprises/ndoutils) Allow you save all the data to MySQL database
-* [`PyNag master`](https://github.com/pynag/pynag/) A command line tool for managing nagios configuration and provides a framework to write plugins
-* [`Okconfig master`](https://github.com/opinkerfi/okconfig) Provides a templated Nagios configuration, Adagios can use okconfig to quickly and easily configure Nagios
+* [`PyNag 0.9.1-1`](https://github.com/pynag/pynag/) A command line tool for managing nagios configuration and provides a framework to write plugins
+* [`Okconfig 1.3.2-1`](https://github.com/opinkerfi/okconfig) Provides a templated Nagios configuration, Adagios can use okconfig to quickly and easily configure Nagios
 * [`MK-livestatus 1.2.8p20`](http://mathias-kettner.com/) MK-livestatus can get Nagios status information, loaded as broker module into Nagios configuration, and Adagios uses mk-livestatus to get status information
-* [`Adagios 1.6.3-1`](https://github.com/opinkerfi/adagios.git) A web based Nagios configuration interface built to be simple and intuitive in design, exposing less of the clutter under the hood of nagios. Adagios is more lighter UI than Check_MK, based on mod_wsgi(so it cannot be used with Check_MK, Check_MK based on mod_python, already deprecated and conflict with mod_wsgi)
-* [`NRDP master`](https://github.com/NagiosEnterprises/nrdp) A flexible data transport mechanism and processor for Nagios. It uses standard ports protocols (HTTP(S) and XML for api response) and can be implemented as a replacement for NSCA. Used with NCPA, omg, those bloody names(nrpe,ncpa,nrds,nrdp,nsti...).
-* [`NCPA 2.0.3`](https://github.com/NagiosEnterprises/ncpa) The Nagios Cross-Platform Agent; a single monitoring agent that installs on all major operating systems. NCPA with a built-in web GUI, we will use ncpa for passive checks.
+* [`Adagios 1.6.3-2`](https://github.com/opinkerfi/adagios.git) A web based Nagios configuration interface built to be simple and intuitive in design, exposing less of the clutter under the hood of nagios. Adagios is more lighter UI than Check_MK, based on mod_wsgi(so it cannot be used with Check_MK, Check_MK based on mod_python, already deprecated and conflict with mod_wsgi)
+* [`NRDP 1.5.2`](https://github.com/NagiosEnterprises/nrdp) A flexible data transport mechanism and processor for Nagios. It uses standard ports protocols (HTTP(S) and XML for api response) and can be implemented as a replacement for NSCA. Used with NCPA, omg, those bloody names(nrpe,ncpa,nrds,nrdp,nsti...).
+* [`NCPA 2.1.3`](https://github.com/NagiosEnterprises/ncpa) The Nagios Cross-Platform Agent; a single monitoring agent that installs on all major operating systems. NCPA with a built-in web GUI, we will use ncpa for passive checks.
 
 Pull nagios image from DockerHub
 
