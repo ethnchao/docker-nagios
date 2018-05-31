@@ -284,7 +284,7 @@ RUN cd /usr/share/okconfig/client/ && \
   mkdir -p windows/ncpa/ && \
   curl -L https://assets.nagios.com/downloads/ncpa/archived/${NCPA_VERSION}/ncpa-${NCPA_VERSION}.exe -o windows/ncpa/ncpa.exe && \
   chmod +x windows/install_nsclient.sh linux/install_okagent.sh.example && \
-  curl -LSf http://download.opensuse.org/repositories/home:/uibmz:/opsi:/opsi40-testing/xUbuntu_12.04/amd64/winexe_1.00.1-1_amd64.deb -o /tmp/winexe.deb && \
+  curl -L http://ftp.twaren.net/Linux/OpenSuSE/repositories/home:/uibmz:/opsi:/opsi40-experimental/Univention_4.1/amd64/winexe_1.00.1-1_amd64.deb -o /tmp/winexe.deb && \
   dpkg -i /tmp/winexe.deb && \
   rm -f /tmp/winexe.deb
 
