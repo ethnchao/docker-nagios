@@ -27,9 +27,9 @@ ENV OKCONFIG_VERSION        1.3.2-1
 ENV PYNAG_VERSION           0.9.1-1
 
 # Remove below if you want use default apt mirror sites
-ADD config/apt/sources.list /etc/apt/sources.list
+ADD config/apt-sources.list /etc/apt/sources.list
 # Remove below if you want use default pip mirror sites
-ADD config/pip/pip.conf /root/.config/pip/pip.conf
+ADD config/pip.conf /root/.config/pip/pip.conf
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
     automake apache2 apache2-utils autoconf \
@@ -143,12 +143,13 @@ RUN virtualenv --python=python3.5 /opt/graphite && \
     https://github.com/graphite-project/graphite-web/archive/${GRAPHITE_VERSION}.zip && \
   deactivate
 
+ADD config/carbon.conf /opt/graphite/conf/carbon.conf
 RUN cd /opt/graphite/conf/ && \
-  cp carbon.conf.example carbon.conf && \
   cp storage-schemas.conf.example storage-schemas.conf && \
   cp graphite.wsgi.example graphite.wsgi && \
+  cp storage-aggregation.conf.example storage-aggregation.conf && \
   sed -i 's/import sys/import sys, site/' graphite.wsgi && \
-  sed -i '/import sys, site/a\site.addsitedir("/opt/graphite/lib/python2.7/site-packages")' graphite.wsgi && \
+  sed -i '/import sys, site/a\site.addsitedir("/opt/graphite/lib/python3.5/site-packages")' graphite.wsgi && \
   cd /opt/graphite/webapp/graphite/ && \
   cp local_settings.py.example local_settings.py && \
   . /opt/graphite/bin/activate && \

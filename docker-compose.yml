@@ -1,14 +1,18 @@
 version: '2'
 services:
   nagios:
-    image: 192.168.120.236:5000/nagios:4.3.1
-    command: --enable-ndo --create-db --server-url http://192.168.120.227:4000
+    image: ethnchao/nagios
+    command: --enable-ndo --create-db --server-url http://192.168.101.100:4000
     ports:
       - 4000:80
       - 4001:3000
     restart: always
     networks:
       - nagios-network
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
     depends_on:
       - nagios_mysql
     volumes:
@@ -23,6 +27,10 @@ services:
     restart: always
     networks:
       - nagios-network
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
     environment:
       - MYSQL_USER=nagios
       - MYSQL_PASSWORD=nagios
