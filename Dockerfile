@@ -222,11 +222,11 @@ RUN cd /tmp/ && \
   chmod +x /usr/bin/wait-for-it && \
   rm -rf /tmp/wait-for-it-master /tmp/wait-for-it.zip
 
-# https://github.com/NagiosEnterprises/nrdp/archive/nrdp-${NRDP_VERSION}.zip
+# https://github.com/NagiosEnterprises/nrdp/archive/${NRDP_VERSION}.zip
 # http://192.168.120.155:8000/ethnchao/nrdp/-/archive/nrdp-${NRDP_VERSION}/nrdp-nrdp-${NRDP_VERSION}.zip
 
 RUN cd /usr/local/ && \
-  curl -L https://github.com/NagiosEnterprises/nrdp/archive/nrdp-${NRDP_VERSION}.zip -o nrdp.zip && \
+  curl -L https://github.com/NagiosEnterprises/nrdp/archive/${NRDP_VERSION}.zip -o nrdp.zip && \
   unzip nrdp.zip && \
   rm -f nrdp.zip && \
   mv nrdp-* nrdp && \
