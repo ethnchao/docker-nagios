@@ -73,7 +73,9 @@ startup() {
     exec runsvdir -P /etc/service &
     RUNSVDIR=$!
     echo "Started runsvdir, PID is $RUNSVDIR"
-    ${NAGIOS_HOME}/bin/ndo2db -c ${NAGIOS_HOME}/etc/ndo2db.cfg
+    if [ $ENABLE_NDO -eq 1 ]; then
+        ${NAGIOS_HOME}/bin/ndo2db -c ${NAGIOS_HOME}/etc/ndo2db.cfg
+    fi    
     trap shutdown SIGTERM SIGHUP SIGINT
     wait $RUNSVDIR
 
