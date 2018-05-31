@@ -187,7 +187,9 @@ define command {\n\
     command_line            /bin/mv /var/spool/nagios/graphios/service-perfdata /var/spool/nagios/graphios/service-perfdata.$TIMET$\n\
 }\n\n' >> objects/commands.cfg
 
-RUN echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" >> /etc/apt/sources.list && \
+# Grafana default mirror site: deb https://packagecloud.io/grafana/stable/debian/ jessie main
+
+RUN echo "deb https://mirrors.tuna.tsinghua.edu.cn/grafana/apt/ jessie main" >> /etc/apt/sources.list && \
   curl https://packagecloud.io/gpg.key | sudo apt-key add - && \
   apt-get update && \
   apt-get install -y --no-install-recommends grafana=${GRAFANA_VERSION} && \
