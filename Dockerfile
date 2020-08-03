@@ -280,7 +280,7 @@ RUN set -eux; \
 RUN set -eux; \
   virtualenv /opt/adagios; \
   . /opt/adagios/bin/activate; \
-  pip install --no-cache-dir --prefix=/opt/adagios django==1.6 pynag==${PYNAG_VERSION} adagios==${ADAGIOS_VERSION}; \
+  pip install --no-cache-dir --prefix=/opt/adagios django==1.6 pynag==${PYNAG_VERSION} adagios==${ADAGIOS_VERSION} simplejson; \
   deactivate; \
   cp -r /opt/adagios/lib/python2.7/site-packages/adagios/etc/adagios/ /etc/
 
@@ -307,7 +307,7 @@ RUN set -eux; \
   sed -i '/import os, site/a\site.addsitedir("/opt/adagios/lib/python2.7/site-packages")' wsgi.py; \
   echo "${NAGIOS_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/adagios; \
   chmod 0440 /etc/sudoers.d/adagios; \
-  echo "WSGISocketPrefix /var/run/apache2/wsgi \n\
+  echo -en "WSGISocketPrefix /var/run/apache2/wsgi \n\
 WSGIDaemonProcess adagios user=${NAGIOS_USER} group=${NAGIOS_GROUP} processes=1 threads=25 \n\
 WSGIScriptAlias /adagios /opt/adagios/lib/python2.7/site-packages/adagios/wsgi.py \n\
 Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
