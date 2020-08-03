@@ -12,7 +12,7 @@ ENV MYSQL_PASSWORD          nagios
 ENV MYSQL_ADDRESS           nagios_mysql
 ENV MYSQL_DATABASE          nagios
 
-ENV ADAGIOS_VERSION         1.6.3-2
+ENV ADAGIOS_VERSION         1.6.3
 ENV GRAPHIOS_VERSION        2.0.3
 ENV GRAPHITE_VERSION        1.1.3
 ENV GRAFANA_VERSION         7.0.5
@@ -265,86 +265,80 @@ RUN set -eux; \
   dpkg -i winexe/winexe_${WINEXE_VERSION}.deb; \
   rm -rvf winexe winexe.zip
 
-# RUN cd /tmp && \
-#   curl http://mathias-kettner.com/download/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz -o mk-livestatus.tar.gz && \
-#   tar zxf mk-livestatus.tar.gz && \
-#   rm -f mk-livestatus.tar.gz && \
-#   mv mk-livestatus* mk-livestatus && \
-#   cd mk-livestatus && \
-#   ./configure --with-nagios4 && \
-#   make && \
-#   make install && \
-#   rm -rvf /tmp/mk-livestatus
+RUN set -eux; \
+  cd /tmp; \
+  curl -L https://checkmk.de/archive/mk-livestatus-${MK_LIVESTATUS_VERSION}.tar.gz -o mk-livestatus.tar.gz; \
+  tar -zxf mk-livestatus.tar.gz; \
+  rm -f mk-livestatus.tar.gz; \
+  mv mk-livestatus* mk-livestatus; \
+  cd mk-livestatus; \
+  ./configure --with-nagios4; \
+  make; \
+  make install; \
+  rm -rvf /tmp/mk-livestatus
 
-# # https://github.com/opinkerfi/adagios/archive/adagios-${ADAGIOS_VERSION}.zip
-# # http://192.168.120.155:8000/ethnchao/adagios/-/archive/adagios-${ADAGIOS_VERSION}/adagios-adagios-${ADAGIOS_VERSION}.zip
+RUN set -eux; \
+  virtualenv /opt/adagios; \
+  . /opt/adagios/bin/activate; \
+  pip install --no-cache-dir --prefix=/opt/adagios django==1.6 pynag==${PYNAG_VERSION} adagios==${ADAGIOS_VERSION}; \
+  deactivate; \
+  cp -r /opt/adagios/lib/python2.7/site-packages/adagios/etc/adagios/ /etc/
 
-# RUN virtualenv /opt/adagios && \
-#   . /opt/adagios/bin/activate && \
-#   cd /tmp && \
-#   curl -L https://github.com/opinkerfi/adagios/archive/adagios-${ADAGIOS_VERSION}.zip -o adagios.zip && \
-#   unzip adagios.zip && \
-#   mv adagios-* adagios && \
-#   cd adagios && \
-#   pip install --no-cache-dir --no-binary=:all: -r requirements.txt . https://github.com/pynag/pynag/archive/pynag-${PYNAG_VERSION}.zip && \
-#   deactivate && \
-#   cp -r adagios/etc/adagios/ /etc/ && \
-#   rm -rvf /tmp/adagios /tmp/adagios.zip
+RUN set -eux; \
+  cd /etc/adagios/; \
+  sed -i 's,^enable_pnp4nagios.*,enable_pnp4nagios=False,' adagios.conf; \
+  sed -i "s,^nagios_config.*,nagios_config=\"${NAGIOS_HOME}/etc/nagios.cfg\"," adagios.conf; \
+  sed -i "s,^nagios_binary.*,nagios_binary=\"${NAGIOS_HOME}/bin/nagios\"," adagios.conf; \
+  sed -i "s,^livestatus_path.*,livestatus_path=\"${NAGIOS_HOME}/var/livestatus\"," adagios.conf; \
+  sed -i "s,^destination_directory.*,destination_directory=\"${NAGIOS_HOME}/etc/adagios/\"," adagios.conf; \
+  mkdir -p ${NAGIOS_HOME}/etc/adagios/ /var/lib/adagios/; \
+  cd ${NAGIOS_HOME}/etc; \
+  git init; \
+  git config user.name "nagios"; \
+  git config user.email "nagios@localhost.com"; \
+  git add *; \
+  git commit -m "Initial commit"; \
+  pynag config --set cfg_dir="${NAGIOS_HOME}/etc/adagios"; \
+  pynag config --append "broker_module=/usr/local/lib/mk-livestatus/livestatus.o ${NAGIOS_HOME}/var/livestatus"; \
+  chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/ /var/lib/adagios/; \
+  cd /opt/adagios/lib/python2.7/site-packages/adagios/; \
+  cp wsgi.py wsgi.py.origin; \
+  sed -i 's/import os/import os, site/' wsgi.py; \
+  sed -i '/import os, site/a\site.addsitedir("/opt/adagios/lib/python2.7/site-packages")' wsgi.py; \
+  echo "${NAGIOS_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/adagios; \
+  chmod 0440 /etc/sudoers.d/adagios; \
+  echo "WSGISocketPrefix /var/run/apache2/wsgi \n\
+WSGIDaemonProcess adagios user=${NAGIOS_USER} group=${NAGIOS_GROUP} processes=1 threads=25 \n\
+WSGIScriptAlias /adagios /opt/adagios/lib/python2.7/site-packages/adagios/wsgi.py \n\
+Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
+<Location /adagios> \n\
+    WSGIProcessGroup adagios \n\
+    AuthName \"Adagios Access\" \n\
+    AuthType Basic \n\
+    AuthUserFile ${NAGIOS_HOME}/etc/htpasswd.users \n\
+    Require valid-user \n\
+    RedirectMatch ^/adagios$ /adagios/ \n\
+</Location> \n" > /etc/apache2/sites-available/adagios.conf; \
+  a2ensite adagios
 
-# RUN cd /etc/adagios/ && \
-#   sed -i 's,^enable_pnp4nagios.*,enable_pnp4nagios=False,' adagios.conf && \
-#   sed -i "s,^nagios_config.*,nagios_config=\"${NAGIOS_HOME}/etc/nagios.cfg\"," adagios.conf && \
-#   sed -i "s,^nagios_binary.*,nagios_binary=\"${NAGIOS_HOME}/bin/nagios\"," adagios.conf && \
-#   sed -i "s,^livestatus_path.*,livestatus_path=\"${NAGIOS_HOME}/var/livestatus\"," adagios.conf && \
-#   sed -i "s,^destination_directory.*,destination_directory=\"${NAGIOS_HOME}/etc/adagios/\"," adagios.conf && \
-#   mkdir -p ${NAGIOS_HOME}/etc/adagios/ /var/lib/adagios/ && \
-#   cd ${NAGIOS_HOME}/etc && \
-#   git init && \
-#   git config user.name "nagios" && \
-#   git config user.email "nagios@localhost.com" && \
-#   git add * && \
-#   git commit -m "Initial commit" && \
-#   pynag config --set cfg_dir="${NAGIOS_HOME}/etc/adagios" && \
-#   pynag config --append "broker_module=/usr/local/lib/mk-livestatus/livestatus.o ${NAGIOS_HOME}/var/livestatus" && \
-#   chown -R ${NAGIOS_USER}:${NAGIOS_GROUP} /etc/adagios/ ${NAGIOS_HOME}/ /var/lib/adagios/ && \
-#   cd /opt/adagios/local/lib/python2.7/site-packages/adagios/ && \
-#   cp wsgi.py wsgi.py.origin && \
-#   sed -i 's/import os/import os, site/' wsgi.py && \
-#   sed -i '/import os, site/a\site.addsitedir("/opt/adagios/lib/python2.7/site-packages")' wsgi.py && \
-#   echo "${NAGIOS_USER} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/adagios && \
-#   chmod 0440 /etc/sudoers.d/adagios && \
-#   echo "WSGISocketPrefix /var/run/apache2/wsgi \n\
-# WSGIDaemonProcess adagios user=${NAGIOS_USER} group=${NAGIOS_GROUP} processes=1 threads=25 \n\
-# WSGIScriptAlias /adagios /opt/adagios/lib/python2.7/site-packages/adagios/wsgi.py \n\
-# Alias /adagios/media /opt/adagios/lib/python2.7/site-packages/adagios/media \n\
-# <Location /adagios> \n\
-#     WSGIProcessGroup adagios \n\
-#     AuthName \"Adagios Access\" \n\
-#     AuthType Basic \n\
-#     AuthUserFile ${NAGIOS_HOME}/etc/htpasswd.users \n\
-#     Require valid-user \n\
-#     RedirectMatch ^/adagios$ /adagios/ \n\
-# </Location> \n" > /etc/apache2/sites-available/adagios.conf && \
-#   a2ensite adagios
+ADD run.sh /run.sh
+ADD config/sv/apache/run /etc/sv/apache/run
+ADD config/sv/carbon/run /etc/sv/carbon/run
+ADD config/sv/postfix/run /etc/sv/postfix/run
+ADD config/sv/graphios/run /etc/sv/graphios/run
 
-# ADD run.sh /run.sh
-# ADD config/sv/apache/run /etc/sv/apache/run
-# ADD config/sv/carbon/run /etc/sv/carbon/run
-# ADD config/sv/postfix/run /etc/sv/postfix/run
-# ADD config/sv/graphios/run /etc/sv/graphios/run
+RUN rm -rvf /etc/sv/getty-5 && \
+  chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run /etc/sv/postfix/run /etc/sv/carbon/run && \
+  ln -s /etc/sv/* /etc/service && \
+  cp /etc/services /var/spool/postfix/etc/ && \
+  ln -sf "/usr/share/zoneinfo/Asia/Shanghai" /etc/localtime
 
-# RUN rm -rvf /etc/sv/getty-5 && \
-#   chmod +x /run.sh /etc/sv/apache/run /etc/sv/graphios/run /etc/sv/postfix/run /etc/sv/carbon/run && \
-#   ln -s /etc/sv/* /etc/service && \
-#   cp /etc/services /var/spool/postfix/etc/ && \
-#   ln -sf "/usr/share/zoneinfo/Asia/Shanghai" /etc/localtime
+ENV APACHE_LOCK_DIR /var/run
+ENV APACHE_LOG_DIR /var/log/apache2
 
-# ENV APACHE_LOCK_DIR /var/run
-# ENV APACHE_LOG_DIR /var/log/apache2
+EXPOSE 80
+EXPOSE 3000
 
-# EXPOSE 80
-# EXPOSE 3000
-
-# ENTRYPOINT ["/run.sh"]
+ENTRYPOINT ["/run.sh"]
 
 CMD [ "main" ]
