@@ -93,8 +93,7 @@ RUN set -eux; \
   cd ${NAGIOS_HOME}/etc/; \
   echo "\$USER2\$=/data/plugin" >> resource.cfg; \
   pynag config --append "cfg_dir=${NAGIOS_HOME}/etc/mount"; \
-  htpasswd -c -b -s htpasswd.users nagiosadmin nagios; \
-  sed -i 's,/bin/mail,/usr/bin/mail,' ${NAGIOS_HOME}/etc/objects/commands.cfg
+  htpasswd -c -b -s htpasswd.users nagiosadmin nagios
 
 RUN set -eux; \
   cd /tmp; \

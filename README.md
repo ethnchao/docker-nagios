@@ -1,6 +1,10 @@
 [![Build Status](https://api.travis-ci.org/ethnchao/docker-nagios.svg?branch=master)](https://travis-ci.org/ethnchao/docker-nagios)  [![](https://images.microbadger.com/badges/image/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own image badge on microbadger.com")  [![](https://images.microbadger.com/badges/version/ethnchao/nagios.svg)](https://microbadger.com/images/ethnchao/nagios "Get your own version badge on microbadger.com")
 
-# docker-nagios
+# [docker-nagios](#docker-nagios)
+  - [Run](#run)
+  - [Build from source](#build-from-source)
+  - [Configuration file location](#configuration-file-location)
+  - [Packages Dependency](#packages-dependency)
 
 [![](https://avatars0.githubusercontent.com/u/5666660?v=3&s=200)](https://www.nagios.org/ "Nagios")
 
@@ -9,7 +13,7 @@ Docker-Nagios provide Nagios service running on the docker container and a serie
 As the docker-image contains a large number of software, the following describes the various components of the version and the basic information:
 
 * [`phusion/baseimage:latest`](https://hub.docker.com/r/phusion/baseimage/) Docker baseimage
-* [`Nagios Core 4.3.4`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
+* [`Nagios Core 4.4.6`](https://github.com/NagiosEnterprises/nagioscore) Nagios core - the community version
 * [`Nagios Plugins 2.2.1`](https://github.com/nagios-plugins/nagios-plugins) Nagios plugins
 * [`Graphios 2.0.3`](https://pypi.python.org/pypi/graphios) Send Nagios spool data to graphite
 * [`Graphite 1.1.3`](https://github.com/graphite-project/graphite-web/) Grafana's datasource
@@ -22,54 +26,28 @@ As the docker-image contains a large number of software, the following describes
 * [`NRDP 1.5.2`](https://github.com/NagiosEnterprises/nrdp) A flexible data transport mechanism and processor for Nagios. It uses standard ports protocols (HTTP(S) and XML for api response) and can be implemented as a replacement for NSCA. Used with NCPA, omg, those bloody names(nrpe,ncpa,nrds,nrdp,nsti...).
 * [`NCPA 2.1.3`](https://github.com/NagiosEnterprises/ncpa) The Nagios Cross-Platform Agent; a single monitoring agent that installs on all major operating systems. NCPA with a built-in web GUI, we will use ncpa for passive checks.
 
-Pull nagios image from DockerHub
+## Quick start
 
-~~~~shell
-$ docker pull ethnchao/nagios
-~~~~
-
-Build the Nagios image from github source
-
-~~~~shell
-$ docker build -t nagios .
-~~~~
-
-Run Nagios with docker
+Ad-hoc run nagios in docker.
 
 ~~~~shell
 $ docker run --name nagios -p 80:80 -p 3000:3000 -d ethnchao/nagios
 ~~~~
+Accessing nagios and Adagios:
 
-Addresses:
+- Nagios http://127.0.0.1/
+    
+    - `User`: `nagiosadmin`
+    - `Password`: `nagios`
 
-~~~~shell
-# Nagios
-http://127.0.0.1/
+- Adagios http://127.0.0.1/adagios
+- NRDP http://127.0.0.1/nrdp
+- Grafana http://127.0.0.1:3000/
+    
+    - `User`: `admin`
+    - `Password`: `admin`
 
-# Adagios
-http://127.0.0.1/adagios
-
-# NRDP
-http://127.0.0.1/nrdp
-
-# Grafana
-http://127.0.0.1:3000/
-
-# NCPA (Client)
-https://ncpa-agent-address:5693/
-~~~~
-
-Nagios web login:
-
-> `username`: `nagiosadmin`
->
-> `password`: `nagios`
-
-Grafana web login:
-
-> `username`: `admin`
->
-> `password`: `admin`
+- NCPA (Client) https://ncpa-agent-address:5693/
 
 If you need to use a custom login user name and password, you can run the container with the environment variables: `NAGIOSADMIN_USER` and` NAGIOSADMIN_PASS`.
 
@@ -80,11 +58,19 @@ $ docker run --name nagios -p 9001:80 -p 3000:3000 \
   -d ethnchao/nagios
 ~~~~
 
+## Run with docker-compose
+
+We recommend that you use docker-compose to run Nagios with MySQL containers, check this [docker-compose.yml][72bb6132] 。
+
+## Setting advertise address
+
 In some features, such as using the Adagios - Okconfig - Install Agent, you need to configure the NRDP server address in the remote client. The IP + port of the address is also the address of the Nagios server, but when you use the Docker to run the container, Nagios Do not know what their own server address, so when we run the container, passing the server address to it.
 
 ~~~~shell
 $ docker run --name nagios -p 9001:80 -p 3000:3000 -d ethnchao/nagios --server-url http://172.17.242.190:9001
 ~~~~
+
+## Store data files in local
 
 You can choose to mount additional configuration files, plugin, okconfig-example to the container, such as the additional configuration file on /data/conf, plugin on /data/plugin, okconfig-example on /data/example.
 
@@ -96,8 +82,9 @@ $ docker run --name nagios -p 80:80 -p 3000:3000 \
   -d ethnchao/nagios
 ~~~~
 
-If you need to store the monitoring information to the MySQL database, you need to enable Ndoutils, which there are two cases：
+## Store monitoring data in MySQL
 
+If you need to store the monitoring information in MySQL database, you need to enable Ndoutils, which there are two cases：
 
 1. If you already executed the Ndoutils database initialization script in the MySQL database, then run this container with option: `--enable-ndo`.
 
@@ -117,7 +104,39 @@ $ docker run --name nagios -p 80:80 -p 3000:3000 \
   -d ethnchao/nagios --enable-ndo --create-db
 ~~~~
 
-Finally we recommend using docker-compose to run Nagios with MySQL containers, check this [docker-compose.yml][72bb6132] 。
+## Setting E-Mail
+
+By setting heirloom-mailx, you'll be able to send email with s-nail command in nagios/adagios interface.
+
+1. Set /etc/s-nail.rc, adding these line:
+
+~~~shell
+set from=your-email@demo.com
+set smtp=smtps://demo.com:465
+set smtp-auth-user=your-email@demo.com
+set smtp-auth-password=your-email-password
+set smtp-auth=login
+~~~
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = '695991913@qq.com'
+EMAIL_HOST_PASSWORD = 'sramookfxzaubega'
+EMAIL_SUBJECT_PREFIX = u'django'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+SERVER_EMAIL = '695991913@qq.com'
+
+
+## Build from source
+
+Build the Nagios image from github source.
+
+~~~~shell
+$ docker build -t nagios .
+~~~~
 
 ## Configuration file location
 
@@ -129,7 +148,6 @@ Okconfig | /etc/okconfig.conf
 NRDP     | /usr/local/nrdp
 Graphios | /etc/graphios/graphios.cfg
 Graphite | /opt/graphite/conf/
-
 
 ## Packages Dependency
 
