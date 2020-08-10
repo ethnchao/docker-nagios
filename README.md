@@ -118,18 +118,6 @@ set smtp-auth-password=your-email-password
 set smtp-auth=login
 ~~~
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.qq.com'
-EMAIL_PORT = 25
-EMAIL_HOST_USER = '695991913@qq.com'
-EMAIL_HOST_PASSWORD = 'sramookfxzaubega'
-EMAIL_SUBJECT_PREFIX = u'django'
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-SERVER_EMAIL = '695991913@qq.com'
-
-
 ## Build from source
 
 Build the Nagios image from github source.
